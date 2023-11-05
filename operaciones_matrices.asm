@@ -131,9 +131,9 @@ programa:
             	j bucle_columnas
 
         
-        fin_bucle_columnas:
-            	addi t6, t6, 1
-            	j lea_filas
+	        fin_bucle_columnas:
+	            	addi t6, t6, 1
+	            	j lea_filas
         
     	fin_lea_filas:
             	addi t1, t1, 1
