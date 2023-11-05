@@ -19,8 +19,9 @@
         .string "]: \0"
     matriz_dim: 
         .align 2
-    matrices_valores:
+    matrices_valores:    # Reservar un espacio para almacenar los valores de las matrices
         .space 1024
+
     
 .text
 
@@ -40,7 +41,7 @@ programa:
     
     # Bucle para leer filas y columnas de cada matriz
     bucle_matrices:
-	beq t1, t0, mostrar_detalle    # Si t1 == t0, mostrar detalles
+	bge t1, t0, mostrar_detalle    # Si t1 == t0, mostrar detalles
     
     	la a0, msg_matriz_num
     	li a7, 4
@@ -82,9 +83,9 @@ programa:
     	li t6, 0  # Contador de filas
     	lea_filas:
 		bge t6, t2, fin_lea_filas
-    		li t0, 0
+    		li t4, 0
         bucle_columnas:
-            	bge t0, t3, fin_bucle_columnas
+            	bge t4, t3, fin_bucle_columnas
             
             	# Imprimir mensaje solicitando valor de la celda
             	la a0, msg_input_celda
@@ -102,7 +103,7 @@ programa:
             	ecall
 
             	# Imprimir número de columna
-            	mv a0, t0
+            	mv a0, t4
             	li a7, 1
             	ecall
             	
@@ -116,18 +117,18 @@ programa:
     		    ecall
 
             	#Calcular dirección de memoria para almacenar el valor
-            	mv t4, a0           # t4 almacena el valor de la celda
-        		la t5, matrices_valores
-        		slli t6, t2, 2 
-        		mul t6, t6, t6
-        		add t5, t5, t6
-        		slli t6, t0, 2
-        		add t5, t5, t6
-        		sw t4, 0(t5)
+            	mv t5, a0           # t5 almacena el valor de la celda
+            	la a0, matrices_valores
+            	slli a1, t3, 2
+            	mul a1, t6, a1 
+            	add a0, a0, a1
+            	slli a1, t4, 2
+            	add a0, a0, a1 
+            	sw t1, 0(a0)
  
-		        #Incrementar contador de columnas
-            	addi t0, t0, 1
-    		    j bucle_columnas
+		#Incrementar contador de columnas
+            	addi t4, t4, 1
+            	j bucle_columnas
 
         
         fin_bucle_columnas:
