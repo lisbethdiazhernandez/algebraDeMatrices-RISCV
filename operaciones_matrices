@@ -1,10 +1,19 @@
 .global programa
 
-
 .data
-	msg_input_nummatrices:
-		.string  "Ingresa la cantidad de matrices a utilizar: "
-		
+    msg_input_nummatrices: 
+        .string "Ingresa la cantidad de matrices a utilizar:\0"
+    msg_input_numfilas: 
+        .string "Ingresa el número de filas para la matriz \0"
+    msg_input_numcolumnas: 
+        .string "Ingresa el número de columnas para la matriz \0"
+    msg_matriz_num: 
+        .string "Matriz número: \0"
+    msg_detalle_matrices: 
+        .string "Detalle de matrices:\n\0"
+    matriz_dim: 
+        .align 2
+
 .text
 
 programa:
@@ -13,11 +22,103 @@ programa:
     li a7, 4
     ecall
 
-    # Leer un número entero del usuario
+    # Leer un número entero del usuario (cantidad de matrices)
     li a7, 5
     ecall
-    mv t0, a0
- 
+    mv t0, a0           # t0 guarda la cantidad de matrices
+    
+    # Inicializar el contador de matrices
+    li t1, 0            # t1 es el contador
+    
+    # Bucle para leer filas y columnas de cada matriz
+    bucle_matrices:
+        beq t1, t0, mostrar_detalle    # Si t1 == t0, mostrar detalles
+        
+        # Imprimir "Matriz número: "
+        la a0, msg_matriz_num
+        li a7, 4
+        ecall
+
+        # Imprimir número de la matriz
+        mv a0, t1
+        li a7, 1
+        ecall
+        
+        # Imprimir mensaje de número de filas
+        la a0, msg_input_numfilas
+        li a7, 4
+        ecall
+        
+        # Leer número de filas
+        li a7, 5
+        ecall
+        mv t2, a0       # t2 guarda el número de filas
+        
+        # Imprimir mensaje de número de columnas
+        la a0, msg_input_numcolumnas
+        li a7, 4
+        ecall
+        
+        # Leer número de columnas
+        li a7, 5
+        ecall
+        mv t3, a0       # t3 guarda el número de columnas
+        
+        # Almacenar las dimensiones en matriz_dim
+        slli t4, t1, 3
+        la t5, matriz_dim
+        add t5, t5, t4  
+
+        # Guardar las dimensiones
+        sw t2, 0(t5)  # Guarda el número de filas
+        sw t3, 4(t5) 
+
+        # Incrementar el contador de matrices
+        addi t1, t1, 1
+        j bucle_matrices
+
+mostrar_detalle:
+    # Imprimir mensaje de detalle
+    la a0, msg_detalle_matrices
+    li a7, 4
+    ecall
+
+    # Inicializar contador
+    li t1, 0
+
+    # Bucle para mostrar el detalle
+    detalle_bucle:
+        beq t1, t0, finalizar
+        
+        # Imprimir "Matriz número: "
+        la a0, msg_matriz_num
+        li a7, 4
+        ecall
+
+        # Imprimir número de la matriz
+        mv a0, t1
+        li a7, 1
+        ecall
+        
+        # Cargar y mostrar filas
+        slli t4, t1, 3
+        la t5, matriz_dim
+        add t5, t5, t4
+        lw t2, 0(t5)
+        mv a0, t2
+        li a7, 1
+        ecall
+        
+        # Cargar y mostrar columnas
+        lw t3, 4(t5)
+        mv a0, t3
+        li a7, 1
+        ecall
+
+        # Incrementar contador
+        addi t1, t1, 1
+        j detalle_bucle
+
 finalizar:
     li a7, 10
     ecall
