@@ -22,7 +22,7 @@ programa:
     li a7, 4
     ecall
 
-    # Leer un número entero del usuario (cantidad de matrices)
+    # Leer el número de la cantidad de matrices
     li a7, 5
     ecall
     mv t0, a0           # t0 guarda la cantidad de matrices
@@ -34,7 +34,6 @@ programa:
     bucle_matrices:
         beq t1, t0, mostrar_detalle    # Si t1 == t0, mostrar detalles
         
-        # Imprimir "Matriz número: "
         la a0, msg_matriz_num
         li a7, 4
         ecall
@@ -90,7 +89,6 @@ mostrar_detalle:
     detalle_bucle:
         beq t1, t0, finalizar
         
-        # Imprimir "Matriz número: "
         la a0, msg_matriz_num
         li a7, 4
         ecall
