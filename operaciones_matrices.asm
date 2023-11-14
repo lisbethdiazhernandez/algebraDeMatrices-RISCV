@@ -1,4 +1,4 @@
- .global programa
+.global programa
 
 .data
     matriz1: .space 1000
@@ -70,7 +70,8 @@ programa:
 	beqz %numero_matriz, matriz1 # if numero_matriz ==0 
 	li t0, 1
 	beq %numero_matriz, t0, matriz2 # if numero_matriz == 1
-		
+	li t0, 2
+	beq %numero_matriz, t0, matriz3 # if numero_matriz == 2
 	matriz1:
 		la a0, matriz1_dimensiones # Cargar matriz1_dimensiones a a0
 		mv t0, %numero_filas	   # Cargar numero filas a t0
@@ -85,7 +86,22 @@ programa:
 		mv t0, %numero_columnas    # Cargar numero columnas a t0
 		sw t0, 4(a0)               # Almacenar t0 en a0[4]
 	j end_macro
-       		 
+        matriz3:
+		la a0, matriz3_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	li t0, 3
+	beq %numero_matriz, t0, matriz4 # if numero_matriz == 3
+	matriz4:
+		la a0, matriz4_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
 	end_macro: 
 	.end_macro
 #------------------------------------------end_almacenar_dimensiones_matriz------------------------------------	  
@@ -222,4 +238,3 @@ mostrar_detalle:
 finalizar:
     li a7, 10
     ecall
-
