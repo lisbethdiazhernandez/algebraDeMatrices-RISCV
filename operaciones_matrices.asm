@@ -81,28 +81,28 @@ programa:
 
     usar_matriz1:
         la a0, matriz1 # carga a a0 matriz1
-        la t3, matriz1_dimensiones # cargar a t3 matriz1_dimensiones
+        la t0, matriz1_dimensiones # cargar a t3 matriz1_dimensiones
         j calcular_mapeo # ir a calculate_address
     usar_matriz2:
         la a0, matriz2
-        la t3, matriz2_dimensiones
+        la t0, matriz2_dimensiones
         j calcular_mapeo
     usar_matriz3:
         la a0, matriz3
-        la t3, matriz3_dimensiones
+        la t0, matriz3_dimensiones
         j calcular_mapeo
     usar_matriz4:
         la a0, matriz4
-        la t3, matriz4_dimensiones
+        la t0, matriz4_dimensiones
 	j calcular_mapeo
 	
     calcular_mapeo: #Aca se realiza el calculo 
-        lw t1, 0(t3) # obtener numero de columnas de t3[0]
-        mul t2, %indice_fila, t1 # guardar en t2 = indice fila * numero de columnas
-        add t2, t2, %indice_columna # sumar a t2 el indice de columna
+        lw t1, 0(t0) # obtener numero de columnas de t3[0]
+        mul t5, %indice_fila, t1 # guardar en t2 = indice fila * numero de columnas
+        add t5, t5, %indice_columna # sumar a t2 el indice de columna
         li t1, 4 # se carga a t1 4 (tamano de una palabra)
-        mul t2, t2, t1 # t2 = t2 * 4
-        add a0, a0, t2 # pos
+        mul t5, t5, t1 # t2 = t2 * 4
+        add a0, a0, t5 # pos
         sw %valor, 0(a0) # guardar valor
         mv a1, a0
 
@@ -164,17 +164,15 @@ programa:
     
     # Inicializar el contador de matrices
     la t2, contador_matrices
-    li t1, 0            # t1 is the counter
-    sw t1, 0(t2)        # Store the initial counter value
+    li t1, 0            # t1 es el contador
+    sw t1, 0(t2)        # guardar el valor del contador
 
     bucle_matrices:
     	la t2, contador_matrices
-	sw t1, 0(t2)  
-	lw t1, 0(t2)  
-	
-	la t2, cantidad_matrices
-	sw t0, 0(t2)  
-	lw t0, 0(t2)  
+    	lw t1, 0(t2)  #cargar el contador de matrices a t1
+
+    	la t2, cantidad_matrices
+    	lw t0, 0(t2) 
 	bge t1, t0, mostrar_detalle    # Si t1 == t0, ir a mostrar detalles
     
     	la a0, msg_matriz_num
@@ -238,9 +236,9 @@ programa:
             	# Leer valor de la celda
             	li a7, 5
     		ecall
-    		#mv t5, a0
-    		#almacenar_valores_matriz(t1, t6, t4, t5) #%numero_matriz, %indice_fila, %indice_columna, %valor
-            	 
+    		mv t5, a0
+    		almacenar_valores_matriz(t1, t6, t4, t5) #%numero_matriz, %indice_fila, %indice_columna, %valor
+            	li t1,0
 		
             	addi t4, t4, 1 # Incrementar contador de columnas
             	j bucle_columnas
@@ -251,11 +249,12 @@ programa:
 	            	j lea_filas
         
     	fin_lea_filas:
-    		la t2, contador_matrices  # Cargar el valor de contador_mactrices a t2
-		sw t1, 0(t2)  # guardar el valor de t1 en t2[0]
-		lw t1, 0(t2)  # Cargarlo de nuevo
-		addi t1, t1, 1
-            	j bucle_matrices
+    		la t2, contador_matrices  # Cargar contador matrices a t2
+    		lw t1, 0(t2)  # cargar el contador a t1
+    		addi t1, t1, 1  # incrementar contador
+    		sw t1, 0(t2)  # guardar de nuevo en contador_matrices nuevo valor 
+    		j bucle_matrices
+
 
 #----------------------------- MACRO imprimir_dimensiones_matriz --------------------------
 	.macro imprimir_dimensiones_matriz (%numero_matriz)
