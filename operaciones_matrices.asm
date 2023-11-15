@@ -1,9 +1,9 @@
 .global programa
 
 .data
-    matriz1: .space 1000
-    matriz2: .space 1000
-    matriz3: .space 1000
+    matriz1: .space 400
+    matriz2: .space 400
+    matriz3: .space 400
     matriz4: .space 1000
     matriz5: .space 1000
     matriz6: .space 1000
@@ -41,6 +41,8 @@
         .string "Detalle de matrices:\n\0"
     msg_input_celda:
         .string "Ingresa el valor para la celda [ \0"
+    msg_abrir_corchete:
+        .string "[: \0"
     msg_coma:
         .string ", \0"
     msg_cerrar_corchete:
@@ -97,6 +99,7 @@ programa:
 	j calcular_mapeo
 	
     calcular_mapeo: #Aca se realiza el calculo 
+    	mv a1, t1
         lw t1, 0(t0) # obtener numero de columnas de t3[0]
         mv t0, %valor
         mul t5, %indice_fila, t1 # guardar en t5 = indice fila * numero de columnas
@@ -105,6 +108,7 @@ programa:
         mul t5, t5, t1 # t2 = t2 * 4
         add a0, a0, t5 # pos
         sw t0, 0(a0) # guardar valor
+        mv t1, a1
         mv a1, a0
 
     end_macro:
@@ -238,8 +242,8 @@ programa:
             	li a7, 5
     		ecall
     		mv t5, a0
+    		 
     		almacenar_valores_matriz(t1, t6, t4, t5) #%numero_matriz, %indice_fila, %indice_columna, %valor
-            	li t1,0
 		
             	addi t4, t4, 1 # Incrementar contador de columnas
             	j bucle_columnas
@@ -326,6 +330,31 @@ programa:
         add a0, t1, a0 # a0 = a0 + offset
         lw a1, 0(a0)   # cargar el valor obtenido
 
+	# Imprimir cierre de corchete
+	la a0, msg_abrir_corchete
+	li a7, 4
+	ecall
+	
+ 	#Imprimir número de fila
+	mv a0, t5
+	li a7, 1
+	ecall
+
+	# Imprimir coma
+	la a0, msg_coma
+	li a7, 4
+	ecall
+
+	# Imprimir número de columna
+	mv a0, t6
+	li a7, 1
+	ecall
+            	
+	# Imprimir cierre de corchete
+	la a0, msg_cerrar_corchete
+	li a7, 4
+	ecall
+	
         # imprimir valor de la celda
         mv a0, a1
         li a7, 1
