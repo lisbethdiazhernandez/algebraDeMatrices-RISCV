@@ -51,6 +51,10 @@
         .space 1024
     contador_matrices:
         .word 0
+        .align 2
+    cantidad_matrices:
+        .word 0
+        .align 2
     contador_filas:
         .word 0   
     contador_columnas:
@@ -157,10 +161,15 @@ programa:
     mv t0, a0 # t0 guarda la cantidad de matrices
     
     # Inicializar el contador de matrices
-    li t1, 0            # t1 es el contador
-    
-    # Bucle para leer filas y columnas de cada matriz
+    la t2, contador_matrices
+    li t1, 0            # t1 is the counter
+    sw t1, 0(t2)        # Store the initial counter value
+
     bucle_matrices:
+    	la t2, contador_matrices
+	sw t1, 0(t2)  
+	lw t1, 0(t2)  
+
 	bge t1, t0, mostrar_detalle    # Si t1 == t0, ir a mostrar detalles
     
     	la a0, msg_matriz_num
@@ -225,8 +234,7 @@ programa:
             	li a7, 5
     		ecall
     		#mv t5, a0
-    		#almacenar_valores_matriz(t1, t6, t4, t3) #%numero_matriz, %indice_fila, %indice_columna, %valor
-
+    		#almacenar_valores_matriz(t1, t6, t4, t5) #%numero_matriz, %indice_fila, %indice_columna, %valor
             	 
 		
             	addi t4, t4, 1 # Incrementar contador de columnas
@@ -238,7 +246,10 @@ programa:
 	            	j lea_filas
         
     	fin_lea_filas:
-            	addi t1, t1, 1 # Incrementar el contador de matrices
+    		la t2, contador_matrices  # Cargar el valor de contador_mactrices a t2
+		sw t1, 0(t2)  # guardar el valor de t1 en t2[0]
+		lw t1, 0(t2)  # Cargarlo de nuevo
+		addi t1, t1, 1
             	j bucle_matrices
 
 #----------------------------- MACRO imprimir_dimensiones_matriz --------------------------
