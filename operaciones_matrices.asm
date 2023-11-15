@@ -98,12 +98,13 @@ programa:
 	
     calcular_mapeo: #Aca se realiza el calculo 
         lw t1, 0(t0) # obtener numero de columnas de t3[0]
-        mul t5, %indice_fila, t1 # guardar en t2 = indice fila * numero de columnas
-        add t5, t5, %indice_columna # sumar a t2 el indice de columna
+        mv t0, %valor
+        mul t5, %indice_fila, t1 # guardar en t5 = indice fila * numero de columnas
+        add t5, t5, %indice_columna # sumar a t5 el indice de columna
         li t1, 4 # se carga a t1 4 (tamano de una palabra)
         mul t5, t5, t1 # t2 = t2 * 4
         add a0, a0, t5 # pos
-        sw %valor, 0(a0) # guardar valor
+        sw t0, 0(a0) # guardar valor
         mv a1, a0
 
     end_macro:
@@ -277,13 +278,80 @@ programa:
    		end_macro:
 		.end_macro
 #----------------------------- END MACRO imprimir_dimensiones_matriz --------------------------
+#----------------------------- MACRO imprimir_valores_matriz --------------------------
+.macro imprimir_valores_matriz(%numero_matriz)
+    li t0, 0
+    beq %numero_matriz, t0, imprimir_matriz1
+    li t0, 1
+    beq %numero_matriz, t0, imprimir_matriz2
+    li t0, 2
+    beq %numero_matriz, t0, imprimir_matriz3
+    li t0, 3
+    beq %numero_matriz, t0, imprimir_matriz4
+    j end_macro
+
+    imprimir_matriz1:
+        la t1, matriz1
+        la t2, matriz1_dimensiones
+        j imprimir_matriz
+    imprimir_matriz2:
+        la t1, matriz2
+        la t2, matriz2_dimensiones
+        j imprimir_matriz
+    imprimir_matriz3:
+        la t1, matriz3
+        la t2, matriz3_dimensiones
+        j imprimir_matriz
+    imprimir_matriz4:
+        la t1, matriz4
+        la t2, matriz4_dimensiones
+        j imprimir_matriz
+
+    imprimir_matriz:
+        lw t3, 0(t2) # t3 = numero de filas
+        lw t4, 4(t2) # t4 = numero de columnas
+
+        li t5, 0 # contador de filas
+    row_loop:
+        bge t5, t3, end_row_loop
+        li t6, 0 # contador de columnas
+    column_loop:
+        bge t6, t4, end_column_loop
+
+        # Mapeo lexicografico
+        mul a0, t5, t4 # a0 = indice_fila * numero columnas
+        add a0, a0, t6 # a0 += indice columna
+        li t0, 4       # t0 = 4 (tamano de una palabra)
+        mul a0, a0, t0 # a0 = a0 * 4
+        add a0, t1, a0 # a0 = a0 + offset
+        lw a1, 0(a0)   # cargar el valor obtenido
+
+        # imprimir valor de la celda
+        mv a0, a1
+        li a7, 1
+        ecall
+
+        addi t6, t6, 1 # incremental contador columnas
+        j column_loop
+    end_column_loop:
+        addi t5, t5, 1 # incrementar contador filas
+        j row_loop
+    end_row_loop:
+
+    end_macro:
+    .end_macro
+
+
+
+#----------------------------- END MACRO imprimir_valores_matriz --------------------------
 mostrar_detalle:
     la a0, msg_detalle_matrices # Imprimir mensaje de detalle
     li a7, 4
     ecall
     li t1, 0
     imprimir_dimensiones_matriz(t1)
-
+    li t2, 1
+    imprimir_valores_matriz(t1)
     li t1, 0 # Inicializar contador de matrices
      
 finalizar:
