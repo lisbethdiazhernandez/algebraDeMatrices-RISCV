@@ -63,6 +63,48 @@
 programa:
 
 #------------------------------------------------------------ MACROS ------------------------------------------------
+#--------------------------------------------almacenar_dimensiones_matriz------------------------------------
+.macro almacenar_valores_matriz(%numero_matriz, %indice_fila, %indice_columna, %valor)
+    li t0, 0
+    beq %numero_matriz, t0, usar_matriz1 # if numero_matriz == 0 ir a use_matriz1
+    li t0, 1
+    beq %numero_matriz, t0, usar_matriz2 # if numero_matriz == 1 ir a use_matriz2
+    li t0, 2
+    beq %numero_matriz, t0, usar_matriz3
+    li t0, 3
+    beq %numero_matriz, t0, usar_matriz4
+    j end_macro
+
+    usar_matriz1:
+        la a0, matriz1 # carga a a0 matriz1
+        la t3, matriz1_dimensiones # cargar a t3 matriz1_dimensiones
+        j calcular_mapeo # ir a calculate_address
+    usar_matriz2:
+        la a0, matriz2
+        la t3, matriz2_dimensiones
+        j calcular_mapeo
+    usar_matriz3:
+        la a0, matriz3
+        la t3, matriz3_dimensiones
+        j calcular_mapeo
+    usar_matriz4:
+        la a0, matriz4
+        la t3, matriz4_dimensiones
+	j calcular_mapeo
+	
+    calcular_mapeo: #Aca se realiza el calculo 
+        lw t1, 0(t3) # obtener numero de columnas de t3[0]
+        mul t2, %indice_fila, t1 # guardar en t2 = indice fila * numero de columnas
+        add t2, t2, %indice_columna # sumar a t2 el indice de columna
+        li t1, 4 # se carga a t1 4 (tamano de una palabra)
+        mul t2, t2, t1 # t2 = t2 * 4
+        add a0, a0, t2 # pos
+        sw %valor, 0(a0) # guardar valor
+        mv a1, a0
+
+    end_macro:
+    .end_macro
+
 
 #--------------------------------------------almacenar_dimensiones_matriz------------------------------------
 
@@ -145,14 +187,6 @@ programa:
     	ecall
     	mv t3, a0 # t3 guarda el número de columnas
     
-    	# Almacenar las dimensiones en matriz_dim
-    	slli t4, t1, 3
-    	la t5, matriz_dim
-    	add t5, t5, t4  
-    	sw t2, 0(t5)    # Guarda el número de filas
-    	sw t3, 4(t5)    # Guarda el número de columnas
-    
-  
         almacenar_dimensiones_matriz(t1, t2, t3) #Almacenar dimensiones el macro recibe (%numero_matriz, %numero_filas, %numero_columnas
     	# Bucle para leer los valores de cada celda
     	li t6, 0  # Contador de filas
@@ -168,7 +202,7 @@ programa:
             	ecall
             		
             	#Imprimir número de fila
- 		        mv a0, t6
+ 		mv a0, t6
             	li a7, 1
             	ecall
 
@@ -189,7 +223,9 @@ programa:
 
             	# Leer valor de la celda
             	li a7, 5
-    		    ecall
+    		ecall
+    		#mv t5, a0
+    		#almacenar_valores_matriz(t1, t6, t4, t3) #%numero_matriz, %indice_fila, %indice_columna, %valor
 
             	 
 		
