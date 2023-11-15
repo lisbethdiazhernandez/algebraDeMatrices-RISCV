@@ -159,6 +159,8 @@ programa:
     li a7, 5 # Leer el número de la cantidad de matrices
     ecall
     mv t0, a0 # t0 guarda la cantidad de matrices
+    la t2, cantidad_matrices
+    sw t0, 0(t2)
     
     # Inicializar el contador de matrices
     la t2, contador_matrices
@@ -169,7 +171,10 @@ programa:
     	la t2, contador_matrices
 	sw t1, 0(t2)  
 	lw t1, 0(t2)  
-
+	
+	la t2, cantidad_matrices
+	sw t0, 0(t2)  
+	lw t0, 0(t2)  
 	bge t1, t0, mostrar_detalle    # Si t1 == t0, ir a mostrar detalles
     
     	la a0, msg_matriz_num
