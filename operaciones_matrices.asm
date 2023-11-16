@@ -4,31 +4,32 @@
     matriz1: .space 400
     matriz2: .space 400
     matriz3: .space 400
-    matriz4: .space 1000
-    matriz5: .space 1000
-    matriz6: .space 1000
-    matriz7: .space 1000
-    matriz8: .space 1000
-    matriz9: .space 1000
+    matriz4: .space 400
+    matriz5: .space 400
+    matriz6: .space 400
+    matriz7: .space 400
+    matriz8: .space 400
+    matriz9: .space 400
+    matriztemp: .space 400
  
     matriz1_dimensiones:
         .word 0,0
     matriz2_dimensiones:
     	.word 0,0
     matriz3_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz4_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz5_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz6_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz7_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz8_dimensiones:
-    	.string "??"
+    	.word 0,0
     matriz9_dimensiones:
-    	.string "??"
+    	.word 0,0
     msg_input_nummatrices: 
         .string "Ingresa la cantidad de matrices a utilizar:\0"
     msg_input_numfilas: 
@@ -47,10 +48,18 @@
         .string ", \0"
     msg_cerrar_corchete:
         .string "]: \0"
-    matriz_dim: 
-        .align 2
-    matrices_valores:    # Reservar un espacio para almacenar los valores de las matrices
-        .space 1024
+    msg_input_operacion:
+        .string "Ingresa su operacion: "
+    input_operacion: 
+    	.space 100
+    error_parentesis: 
+    	.string "Sintaxis incorrecta, se encontro un (, pero no el de finalizacion."
+    se_procedera_operacion: 
+    	.string "Se procedera a operar: "
+    
+    cadena_a_operar: 
+    	.space 100	
+
     contador_matrices:
         .word 0
         .align 2
@@ -156,7 +165,7 @@ programa:
 	end_macro: 
 	.end_macro
 #------------------------------------------end_almacenar_dimensiones_matriz------------------------------------	  
-#------------ END MACROS ----------------
+#------------------------------------------ END MACROS --------------------------------------------------------
     la a0, msg_input_nummatrices # Imprimir mensaje inicial al usuario
     li a7, 4
     ecall
@@ -178,6 +187,7 @@ programa:
 
     	la t2, cantidad_matrices
     	lw t0, 0(t2) 
+    	
 	bge t1, t0, mostrar_detalle    # Si t1 == t0, ir a mostrar detalles
     
     	la a0, msg_matriz_num
@@ -260,7 +270,7 @@ programa:
     		sw t1, 0(t2)  # guardar de nuevo en contador_matrices nuevo valor 
     		j bucle_matrices
 
-
+##################################### BEGIN MACROS ####################################
 #----------------------------- MACRO imprimir_dimensiones_matriz --------------------------
 	.macro imprimir_dimensiones_matriz (%numero_matriz)
    		beqz %numero_matriz, matriz1
@@ -369,20 +379,143 @@ programa:
 
     end_macro:
     .end_macro
-
-
-
 #----------------------------- END MACRO imprimir_valores_matriz --------------------------
+
+#--------------------------------- MACRO realizar operaciones ----------------------------
+	.macro realizar_operaciones (%numero_matriz) #TODO: pendiente de implementar
+   		beqz %numero_matriz, matriz1
+
+   		matriz1:
+   			la a0, matriz1_dimensiones
+       			lw t0, 0(a0) #t0 tiene las filas
+       			 
+       			la a0, matriz1_dimensiones
+       			lw t1, 4(a0) # t1 tiene columnas
+       			 
+       			
+       			j end_macro
+			
+
+   		end_macro:
+		.end_macro
+#----------------------------- END MACRO realizar operaciones --------------------------
+#-------------------------------- MACRO operacion escalar ------------------------------
+	.macro operacion_escalar (%escalar, %numero_matriz) #TODO: pendiente de terminar
+   		beqz %numero_matriz, matriz1
+		li t0, 1
+    		beq %numero_matriz, matriz1
+    		li t1, %escalar
+    		 
+   		imprimir_matriz1:
+        		la t1, matriz1
+        		la t2, matriz1_dimensiones
+        		j imprimir_matriz
+			
+		imprimir_matriz:
+        		lw t3, 0(t2) # t3 = numero de filas
+        		lw t4, 4(t2) # t4 = numero de columnas
+        		li t5, 0 # contador de filas
+    		row_loop:
+        		bge t5, t3, end_row_loop
+        		li t6, 0 # contador de columnas
+    		column_loop:
+        		bge t6, t4, end_column_loop
+
+        	# Mapeo lexicografico
+        		mul a0, t5, t4 # a0 = indice_fila * numero columnas
+        		add a0, a0, t6 # a0 += indice columna
+        		li t0, 4       # t0 = 4 (tamano de una palabra)
+        		mul a0, a0, t0 # a0 = a0 * 4
+        		add a0, t1, a0 # a0 = a0 + offset
+        		lw a1, 0(a0)   # cargar el valor obtenido
+
+  		# imprimir valor de la celda
+			mv a0, a1
+			li a7, 1
+			ecall
+
+		addi t6, t6, 1 # incremental contador columnas
+		j column_loop
+    	end_column_loop:
+        	addi t5, t5, 1 # incrementar contador filas
+        	j row_loop
+	end_row_loop:
+   		end_macro:
+		.end_macro
+#----------------------------- END MACRO operacion escalar --------------------------
+##################################### END MACROS ####################################
 mostrar_detalle:
     la a0, msg_detalle_matrices # Imprimir mensaje de detalle
     li a7, 4
     ecall
     li t1, 0
-    imprimir_dimensiones_matriz(t1)
+    imprimir_dimensiones_matriz(t1) #TODO: unicamente para verificacion de datos
     li t2, 1
-    imprimir_valores_matriz(t1)
+    imprimir_valores_matriz(t1) #TODO: unicamente para verificacion de datos
     li t1, 0 # Inicializar contador de matrices
-     
+    la a0, msg_input_operacion
+    li a7, 4
+    ecall
+    li a1, 100
+    li a7, 8
+    ecall
+    
+    #volver a imprimir valor a donde apunta t5
+    mv t5, a0
+    mv a0, t5                   # Asignar valor de t5 a a0
+    li a7, 4                    # Imprimir valor para verificar 
+    ecall                      
+    li t1, 0
+    la t6, cadena_a_operar
+    
+ 
+verificacion_parentesis: #TODO: convertir en macro
+    lb a0, 0(t5)              # Cargar primer caracter
+    beq a0, zero, finalizo_lectura    # Si el caracter es nulo, ir a finalizo_lectura 
+    li t2, '('                # asignar a t2 valor ASCII de '('
+    li t3, ')'                # asignar a t3 valor ASCII de ')'
+    beq a0, t2, inicia_segmento  # if caracter actual == '(' inicia segmento
+    beq a0, t3, termina_segmento   # if caracter actual == ')' termina segmento
+    bnez t1, almacenar_cadena_operacion      # Guardar valor adentro del parentesis
+    j continuar_verificacion_parentesis
+
+inicia_segmento:
+    li t1, 1                  # Setear flag se encontro (
+    j continuar_verificacion_parentesis
+
+termina_segmento:
+    li t1, 0                  # limpiar flag de parentesis
+    sb zero, 0(t6)              
+    j procesar_cadena
+
+almacenar_cadena_operacion:
+    sb a0, 0(t6)             # Guardar valor en 'cadena_a_operar'
+    addi t6, t6, 1           # Moverse a siguiente posicion en cadena a operar
+
+continuar_verificacion_parentesis:
+    addi t5, t5, 1           # Moverse a siguiente posicion en input operaciones
+    j verificacion_parentesis
+
+finalizo_lectura:
+    bnez t1, error           # Los parentesis no son correctos
+    j procesar_cadena
+
+error:
+    la a0, error_parentesis
+    li a7, 4
+    ecall
+    j finalizar
+
+procesar_cadena:
+    la a0, se_procedera_operacion
+    li a7, 4
+    ecall
+    la a0, cadena_a_operar   # Cargar a a0 lo obtenido dentro de los parentesis
+    li a7, 4                  
+    ecall                    
+
+
+         
 finalizar:
     li a7, 10
     ecall
