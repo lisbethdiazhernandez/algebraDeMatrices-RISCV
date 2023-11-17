@@ -10,7 +10,7 @@
     matriz7: .space 400
     matriz8: .space 400
     matriz9: .space 400
-    matriztemp: .space 400
+    matriz_resultado: .space 400
  
     matriz1_dimensiones:
         .word 0,0
@@ -30,6 +30,8 @@
     	.word 0,0
     matriz9_dimensiones:
     	.word 0,0
+    matriztemp_dimensiones:
+    	.word 0,0    
     msg_input_nummatrices: 
         .string "Ingresa la cantidad de matrices a utilizar:\0"
     msg_input_numfilas: 
@@ -43,11 +45,13 @@
     msg_input_celda:
         .string "Ingresa el valor para la celda [ \0"
     msg_abrir_corchete:
-        .string "[: \0"
+        .string "[ \0"
     msg_coma:
         .string ", \0"
     msg_cerrar_corchete:
         .string "]: \0"
+    msg_nueva_linea:
+    	.string "\n\0"
     msg_input_operacion:
         .string "Ingresa su operacion: "
     input_operacion: 
@@ -78,7 +82,7 @@
 programa:
 
 #------------------------------------------------------------ MACROS ------------------------------------------------
-#--------------------------------------------almacenar_dimensiones_matriz------------------------------------
+#--------------------------------------------almacenar_valores_matriz------------------------------------
 .macro almacenar_valores_matriz(%numero_matriz, %indice_fila, %indice_columna, %valor)
     li t0, 0
     beq %numero_matriz, t0, usar_matriz1 # if numero_matriz == 0 ir a use_matriz1
@@ -88,6 +92,8 @@ programa:
     beq %numero_matriz, t0, usar_matriz3
     li t0, 3
     beq %numero_matriz, t0, usar_matriz4
+    li t0, 10
+    beq %numero_matriz, t0, usar_matriztemp
     j end_macro
 
     usar_matriz1:
@@ -106,15 +112,17 @@ programa:
         la a0, matriz4
         la t0, matriz4_dimensiones
 	j calcular_mapeo
-	
+    usar_matriztemp:
+     	la a0, matriz_resultado
+     	la t0, matriztemp_dimensiones
     calcular_mapeo: #Aca se realiza el calculo 
     	mv a1, t1
-        lw t1, 0(t0) # obtener numero de columnas de t3[0]
+        lw t1, 0(t0) # obtener numero de columnas de t0[0]
         mv t0, %valor
         mul t5, %indice_fila, t1 # guardar en t5 = indice fila * numero de columnas
         add t5, t5, %indice_columna # sumar a t5 el indice de columna
         li t1, 4 # se carga a t1 4 (tamano de una palabra)
-        mul t5, t5, t1 # t2 = t2 * 4
+        mul t5, t5, t1 # t5 = t5 * 4
         add a0, a0, t5 # pos
         sw t0, 0(a0) # guardar valor
         mv t1, a1
@@ -132,6 +140,8 @@ programa:
 	beq %numero_matriz, t0, matriz2 # if numero_matriz == 1
 	li t0, 2
 	beq %numero_matriz, t0, matriz3 # if numero_matriz == 2
+	li t0, 10
+	beq %numero_matriz, t0, matriztemp # if numero_matriz == 'a'
 	matriz1:
 		la a0, matriz1_dimensiones # Cargar matriz1_dimensiones a a0
 		mv t0, %numero_filas	   # Cargar numero filas a t0
@@ -157,6 +167,14 @@ programa:
 	beq %numero_matriz, t0, matriz4 # if numero_matriz == 3
 	matriz4:
 		la a0, matriz4_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	 
+	matriztemp:
+		la a0, matriztemp_dimensiones # Cargar matriztemp_dimensionesa0
 		mv t0, %numero_filas	   # Cargar numero filas a t0
 		sw t0, 0(a0)               # Almacenar t0 en a0[0]
 		mv t0, %numero_columnas    # Cargar numero columnas a t0
@@ -215,6 +233,7 @@ programa:
     	mv t3, a0 # t3 guarda el número de columnas
     
         almacenar_dimensiones_matriz(t1, t2, t3) #Almacenar dimensiones el macro recibe (%numero_matriz, %numero_filas, %numero_columnas
+    	
     	# Bucle para leer los valores de cada celda
     	li t6, 0  # Contador de filas
     	lea_filas:
@@ -302,8 +321,10 @@ programa:
     beq %numero_matriz, t0, imprimir_matriz3
     li t0, 3
     beq %numero_matriz, t0, imprimir_matriz4
+    
+    li t0, 10
+    beq %numero_matriz, t0, imprimir_matriztemp
     j end_macro
-
     imprimir_matriz1:
         la t1, matriz1
         la t2, matriz1_dimensiones
@@ -320,7 +341,11 @@ programa:
         la t1, matriz4
         la t2, matriz4_dimensiones
         j imprimir_matriz
-
+    imprimir_matriztemp:
+        la t1, matriz_resultado
+        la t2, matriztemp_dimensiones
+        j imprimir_matriz
+     
     imprimir_matriz:
         lw t3, 0(t2) # t3 = numero de filas
         lw t4, 4(t2) # t4 = numero de columnas
@@ -339,7 +364,7 @@ programa:
         mul a0, a0, t0 # a0 = a0 * 4
         add a0, t1, a0 # a0 = a0 + offset
         lw a1, 0(a0)   # cargar el valor obtenido
-
+        mv t0, a1
 	# Imprimir cierre de corchete
 	la a0, msg_abrir_corchete
 	li a7, 4
@@ -366,8 +391,13 @@ programa:
 	ecall
 	
         # imprimir valor de la celda
+        mv a1, t0
         mv a0, a1
         li a7, 1
+        ecall
+        
+        la a0, msg_nueva_linea
+        li a7, 4
         ecall
 
         addi t6, t6, 1 # incremental contador columnas
@@ -443,13 +473,119 @@ programa:
    		end_macro:
 		.end_macro
 #----------------------------- END MACRO operacion escalar --------------------------
+#------------------------------ MACRO SUMAR --------------------------------------
+	.macro suma_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
+    		# Iniciar contadores 
+		mv a1, t1
+		
+    		li t1, 10
+    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		mv t1, a1
+    		li t0, 0 # contador fila
+    		li t1, 0 # contador columna
+    		
+    		sumar_filas:
+    			mv a2, %filas
+    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+
+    			# Reiniciar contador columnas
+    			li t1, 0
+    			sumar_columnas:
+    				mv a3, %columnas
+    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+
+    				# Realizar calculo de posicion en memoria
+    				li t2, 4 # Tamano de un elemento
+    				mul t3, t0, %columnas
+    				add t3, t3, t1
+    				mul t3, t3, t2
+
+    				# Cargar a t4 elementos de la matriz
+    				la t4, %matriz1
+    				add t4, t4, t3
+    				lw t5, 0(t4) # cargar en t5 valor en celda
+    				la t4, %matriz2
+    				add t4, t4, t3
+    				lw t6, 0(t4) #cargar a t6 valor en celda
+
+    				# Realizar la suma entre valores en posicion [filas, columnas]
+    				add t5, t5, t6
+
+    				# Almacenar resultado en matriz_resultado
+    				la t4, matriz_resultado
+    				add t4, t4, t3
+    				sw t5, 0(t4)
+    				
+    				addi t1, t1, 1
+    				mv %columnas, a3
+    				j sumar_columnas
+
+    			terminar_columnas:
+    				addi t0, t0, 1 # Incrementar contador columnas
+    				mv %filas, a2
+    				j sumar_filas
+
+    		terminar_suma:
+	.end_macro
+#---------------------------------- END MACRO SUMAR ---------------------------------
+#-------------------------------- MACRO RESTA --------------------------------------
+	.macro resta_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
+    		# Iniciar contadores 
+		mv a1, t1
+		
+    		li t1, 10
+    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		mv t1, a1
+    		li t0, 0 # contador fila
+    		li t1, 0 # contador columna
+    		
+    		sumar_filas:
+    			mv a2, %filas
+    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+
+    			# Reiniciar contador columnas
+    			li t1, 0
+    			sumar_columnas:
+    				mv a3, %columnas
+    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+
+    				# Realizar calculo de posicion en memoria
+    				li t2, 4 # Tamano de un elemento
+    				mul t3, t0, %columnas
+    				add t3, t3, t1
+    				mul t3, t3, t2
+
+    				# Cargar a t4 elementos de la matriz
+    				la t4, %matriz1
+    				add t4, t4, t3
+    				lw t5, 0(t4) # cargar en t5 valor en celda
+    				la t4, %matriz2
+    				add t4, t4, t3
+    				lw t6, 0(t4) #cargar a t6 valor en celda
+
+    				# Realizar la suma entre valores en posicion [filas, columnas]
+    				add t5, t5, t6
+
+    				# Almacenar resultado en matriz_resultado
+    				la t4, matriz_resultado
+    				add t4, t4, t3
+    				sw t5, 0(t4)
+    				
+    				addi t1, t1, 1
+    				mv %columnas, a3
+    				j sumar_columnas
+
+    			terminar_columnas:
+    				addi t0, t0, 1 # Incrementar contador columnas
+    				mv %filas, a2
+    				j sumar_filas
+
+    		terminar_suma:
+	.end_macro
+#---------------------------------- END MACRO RESTA ---------------------------------
 ##################################### END MACROS ####################################
 mostrar_detalle:
-    la a0, msg_detalle_matrices # Imprimir mensaje de detalle
-    li a7, 4
-    ecall
-    li t1, 0
-    imprimir_dimensiones_matriz(t1) #TODO: unicamente para verificacion de datos
+    
     li t2, 1
     imprimir_valores_matriz(t1) #TODO: unicamente para verificacion de datos
     li t1, 0 # Inicializar contador de matrices
@@ -468,54 +604,59 @@ mostrar_detalle:
     li t1, 0
     la t6, cadena_a_operar
     
+    li t2, 2
+    li t3, 2
+    suma_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
+    li t1, 10
+    imprimir_valores_matriz(t1)
+  
  
-verificacion_parentesis: #TODO: convertir en macro
-    lb a0, 0(t5)              # Cargar primer caracter
-    beq a0, zero, finalizo_lectura    # Si el caracter es nulo, ir a finalizo_lectura 
-    li t2, '('                # asignar a t2 valor ASCII de '('
-    li t3, ')'                # asignar a t3 valor ASCII de ')'
-    beq a0, t2, inicia_segmento  # if caracter actual == '(' inicia segmento
-    beq a0, t3, termina_segmento   # if caracter actual == ')' termina segmento
-    bnez t1, almacenar_cadena_operacion      # Guardar valor adentro del parentesis
-    j continuar_verificacion_parentesis
+#verificacion_parentesis: #TODO: convertir en macro
+#    lb a0, 0(t5)              # Cargar primer caracter
+#    beq a0, zero, finalizo_lectura    # Si el caracter es nulo, ir a finalizo_lectura 
+#    li t2, '('                # asignar a t2 valor ASCII de '('
+#    li t3, ')'                # asignar a t3 valor ASCII de ')'
+#    beq a0, t2, inicia_segmento  # if caracter actual == '(' inicia segmento
+#    beq a0, t3, termina_segmento   # if caracter actual == ')' termina segmento
+#    bnez t1, almacenar_cadena_operacion      # Guardar valor adentro del parentesis
+#    j continuar_verificacion_parentesis
 
-inicia_segmento:
-    li t1, 1                  # Setear flag se encontro (
-    j continuar_verificacion_parentesis
+#inicia_segmento:
+#    li t1, 1                  # Setear flag se encontro (
+#    j continuar_verificacion_parentesis
 
-termina_segmento:
-    li t1, 0                  # limpiar flag de parentesis
-    sb zero, 0(t6)              
-    j procesar_cadena
+#termina_segmento:
+#    li t1, 0                  # limpiar flag de parentesis
+#    sb zero, 0(t6)              
+#    j procesar_cadena
 
-almacenar_cadena_operacion:
-    sb a0, 0(t6)             # Guardar valor en 'cadena_a_operar'
-    addi t6, t6, 1           # Moverse a siguiente posicion en cadena a operar
+#almacenar_cadena_operacion:
+#    sb a0, 0(t6)             # Guardar valor en 'cadena_a_operar'
+#    addi t6, t6, 1           # Moverse a siguiente posicion en cadena a operar
 
-continuar_verificacion_parentesis:
-    addi t5, t5, 1           # Moverse a siguiente posicion en input operaciones
-    j verificacion_parentesis
+#continuar_verificacion_parentesis:
+#    addi t5, t5, 1           # Moverse a siguiente posicion en input operaciones
+#    j verificacion_parentesis
 
-finalizo_lectura:
-    bnez t1, error           # Los parentesis no son correctos
-    j procesar_cadena
+#finalizo_lectura:
+#    bnez t1, error           # Los parentesis no son correctos
+#    j procesar_cadena
 
-error:
-    la a0, error_parentesis
-    li a7, 4
-    ecall
-    j finalizar
+#error:
+#    la a0, error_parentesis
+#   li a7, 4
+#    ecall
+#    j finalizar
 
-procesar_cadena:
-    la a0, se_procedera_operacion
-    li a7, 4
-    ecall
-    la a0, cadena_a_operar   # Cargar a a0 lo obtenido dentro de los parentesis
-    li a7, 4                  
-    ecall                    
+#procesar_cadena:
+#    la a0, se_procedera_operacion
+#    li a7, 4
+#    ecall
+#    la a0, cadena_a_operar   # Cargar a a0 lo obtenido dentro de los parentesis
+#    li a7, 4                  
+#    ecall 
 
-
-         
+      
 finalizar:
     li a7, 10
     ecall
