@@ -10,8 +10,8 @@
     matriz7: .space 400
     matriz8: .space 400
     matriz9: .space 400
-    matriz_resultado: .space 400
- 
+    matriz_resultado: .space 400 
+    matriz_escalar: .space 400 
     matriz1_dimensiones:
         .word 0,0
     matriz2_dimensiones:
@@ -31,7 +31,9 @@
     matriz9_dimensiones:
     	.word 0,0
     matriztemp_dimensiones:
-    	.word 0,0    
+    	.word 0,0  
+    matrizescalar_dimensiones:
+    	.word 0,0   
     msg_input_nummatrices: 
         .string "Ingresa la cantidad de matrices a utilizar:\0"
     msg_input_numfilas: 
@@ -94,6 +96,8 @@ programa:
     beq %numero_matriz, t0, usar_matriz4
     li t0, 10
     beq %numero_matriz, t0, usar_matriztemp
+    li t0, 11
+    beq %numero_matriz, t0, usar_matrizescalar
     j end_macro
 
     usar_matriz1:
@@ -115,6 +119,9 @@ programa:
     usar_matriztemp:
      	la a0, matriz_resultado
      	la t0, matriztemp_dimensiones
+    usar_matrizescalar:
+    	la a0, matriz_escalar
+    	la t0, matrizescalar_dimensiones
     calcular_mapeo: #Aca se realiza el calculo 
     	mv a1, t1
         lw t1, 0(t0) # obtener numero de columnas de t0[0]
@@ -142,6 +149,8 @@ programa:
 	beq %numero_matriz, t0, matriz3 # if numero_matriz == 2
 	li t0, 10
 	beq %numero_matriz, t0, matriztemp # if numero_matriz == 'a'
+	li t0, 11
+	beq %numero_matriz, t0, matrizescalar # if numero_matriz == 'a'
 	matriz1:
 		la a0, matriz1_dimensiones # Cargar matriz1_dimensiones a a0
 		mv t0, %numero_filas	   # Cargar numero filas a t0
@@ -180,6 +189,12 @@ programa:
 		mv t0, %numero_columnas    # Cargar numero columnas a t0
 		sw t0, 4(a0)               # Almacenar t0 en a0[4]
 	j end_macro
+	matrizescalar:
+		la a0, matrizescalar_dimensiones # Cargar matriztemp_dimensionesa0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0) 
 	end_macro: 
 	.end_macro
 #------------------------------------------end_almacenar_dimensiones_matriz------------------------------------	  
@@ -324,6 +339,8 @@ programa:
     
     li t0, 10
     beq %numero_matriz, t0, imprimir_matriztemp
+    li t0, 11
+    beq %numero_matriz, t0, imprimir_matrizescalar
     j end_macro
     imprimir_matriz1:
         la t1, matriz1
@@ -345,7 +362,10 @@ programa:
         la t1, matriz_resultado
         la t2, matriztemp_dimensiones
         j imprimir_matriz
-     
+    imprimir_matrizescalar:
+    	la t1, matriz_escalar
+    	la t2, matrizescalar_dimensiones
+    	j imprimir_matriz
     imprimir_matriz:
         lw t3, 0(t2) # t3 = numero de filas
         lw t4, 4(t2) # t4 = numero de columnas
@@ -429,50 +449,58 @@ programa:
    		end_macro:
 		.end_macro
 #----------------------------- END MACRO realizar operaciones --------------------------
-#-------------------------------- MACRO operacion escalar ------------------------------
-	.macro operacion_escalar (%escalar, %numero_matriz) #TODO: pendiente de terminar
-   		beqz %numero_matriz, matriz1
-		li t0, 1
-    		beq %numero_matriz, matriz1
-    		li t1, %escalar
-    		 
-   		imprimir_matriz1:
-        		la t1, matriz1
-        		la t2, matriz1_dimensiones
-        		j imprimir_matriz
-			
-		imprimir_matriz:
-        		lw t3, 0(t2) # t3 = numero de filas
-        		lw t4, 4(t2) # t4 = numero de columnas
-        		li t5, 0 # contador de filas
-    		row_loop:
-        		bge t5, t3, end_row_loop
-        		li t6, 0 # contador de columnas
-    		column_loop:
-        		bge t6, t4, end_column_loop
+#------------------------------ MACRO ESCALAR --------------------------------------
+	.macro escalar_matriz (%matriz1, %k, %matriz_resultado, %filas, %columnas)
+    		# Iniciar contadores 
+		mv a1, t1
+    		li t1, 11 # Numero asignado a matriz escalar
+    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		mv t1, a1
+    		li t0, 0 # contador fila
+    		li t1, 0 # contador columna
+    		
+    		sumar_filas:
+    			mv a2, %filas
+    			bge t0, %filas, terminar_suma # if t0 == filas terminar
 
-        	# Mapeo lexicografico
-        		mul a0, t5, t4 # a0 = indice_fila * numero columnas
-        		add a0, a0, t6 # a0 += indice columna
-        		li t0, 4       # t0 = 4 (tamano de una palabra)
-        		mul a0, a0, t0 # a0 = a0 * 4
-        		add a0, t1, a0 # a0 = a0 + offset
-        		lw a1, 0(a0)   # cargar el valor obtenido
+    			# Reiniciar contador columnas
+    			li t1, 0
+    			sumar_columnas:
+    				mv a3, %columnas
+    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
-  		# imprimir valor de la celda
-			mv a0, a1
-			li a7, 1
-			ecall
+    				# Realizar calculo de posicion en memoria
+    				li t2, 4 # Tamano de un elemento
+    				mul t3, t0, %columnas
+    				add t3, t3, t1
+    				mul t3, t3, t2
 
-		addi t6, t6, 1 # incremental contador columnas
-		j column_loop
-    	end_column_loop:
-        	addi t5, t5, 1 # incrementar contador filas
-        	j row_loop
-	end_row_loop:
-   		end_macro:
-		.end_macro
-#----------------------------- END MACRO operacion escalar --------------------------
+    				# Cargar a t4 elementos de la matriz
+    				la t4, %matriz1
+    				add t4, t4, t3
+    				lw t5, 0(t4) # cargar en t5 valor en celda
+    				 
+    				# Realizar la suma entre valores en posicion [filas, columnas]
+    				mul t5, t5, %k
+
+    				# Almacenar resultado en matriz_resultado
+    				la t4, matriz_resultado
+    				add t4, t4, t3
+    				sw t5, 0(t4)
+    				
+    				addi t1, t1, 1
+    				mv %columnas, a3
+    				j sumar_columnas
+
+    			terminar_columnas:
+    				addi t0, t0, 1 # Incrementar contador columnas
+    				mv %filas, a2
+    				j sumar_filas
+
+    		terminar_suma:
+	.end_macro
+#---------------------------------- END MACRO ESCALAR ---------------------------------
+
 #------------------------------ MACRO SUMAR --------------------------------------
 	.macro suma_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
     		# Iniciar contadores 
@@ -583,6 +611,61 @@ programa:
     		terminar_suma:
 	.end_macro
 #---------------------------------- END MACRO RESTA ---------------------------------
+#-------------------------------- MACRO MULTIPLICACION --------------------------------------
+	.macro multiplicacion_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
+    		# Iniciar contadores 
+		mv a1, t1
+		
+    		li t1, 10
+    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		mv t1, a1
+    		li t0, 0 # contador fila
+    		li t1, 0 # contador columna
+    		
+    		sumar_filas:
+    			mv a2, %filas
+    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+
+    			# Reiniciar contador columnas
+    			li t1, 0
+    			sumar_columnas:
+    				mv a3, %columnas
+    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+
+    				# Realizar calculo de posicion en memoria
+    				li t2, 4 # Tamano de un elemento
+    				mul t3, t0, %columnas
+    				add t3, t3, t1
+    				mul t3, t3, t2
+
+    				# Cargar a t4 elementos de la matriz
+    				la t4, %matriz1
+    				add t4, t4, t3
+    				lw t5, 0(t4) # cargar en t5 valor en celda
+    				la t4, %matriz2
+    				add t4, t4, t3
+    				lw t6, 0(t4) #cargar a t6 valor en celda
+
+    				# Realizar la resta entre valores en posicion [filas, columnas]
+    				mul t5, t5, t6
+
+    				# Almacenar resultado en matriz_resultado
+    				la t4, matriz_resultado
+    				add t4, t4, t3
+    				sw t5, 0(t4)
+    				
+    				addi t1, t1, 1
+    				mv %columnas, a3
+    				j sumar_columnas
+
+    			terminar_columnas:
+    				addi t0, t0, 1 # Incrementar contador columnas
+    				mv %filas, a2
+    				j sumar_filas
+
+    		terminar_suma:
+	.end_macro
+#---------------------------------- END MACRO MULTIPLICACION ---------------------------------
 ##################################### END MACROS ####################################
 mostrar_detalle:
     
@@ -606,7 +689,7 @@ mostrar_detalle:
     
     li t2, 2
     li t3, 2
-    resta_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
+    multiplicacion_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
     li t1, 10
     imprimir_valores_matriz(t1)
   
