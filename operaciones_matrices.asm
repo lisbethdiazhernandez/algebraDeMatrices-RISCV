@@ -563,8 +563,8 @@ programa:
     				add t4, t4, t3
     				lw t6, 0(t4) #cargar a t6 valor en celda
 
-    				# Realizar la suma entre valores en posicion [filas, columnas]
-    				add t5, t5, t6
+    				# Realizar la resta entre valores en posicion [filas, columnas]
+    				sub t5, t5, t6
 
     				# Almacenar resultado en matriz_resultado
     				la t4, matriz_resultado
@@ -606,7 +606,7 @@ mostrar_detalle:
     
     li t2, 2
     li t3, 2
-    suma_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
+    resta_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
     li t1, 10
     imprimir_valores_matriz(t1)
   
