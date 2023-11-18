@@ -509,41 +509,47 @@ programa:
 #---------------------------------- END MACRO ESCALAR ---------------------------------
 
 #------------------------------ MACRO SUMAR --------------------------------------
-	.macro suma_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
-    		# Iniciar contadores 
-		mv a1, t1
-		
+	.macro suma_matrices (%matriz1_letra, %matriz2_letra, %matriz_resultado)
+    	     # Iniciar contadores 
+             obtener_matriz1(%matriz1_letra)
+	     obtener_matriz2(%matriz2_letra)    		
+	     	
+             operar:
+		obtener_dimensiones(%matriz1_letra)
     		li t1, 10
-    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		almacenar_dimensiones_matriz(t1, s6, s7)
     		mv t1, a1
     		li t0, 0 # contador fila
     		li t1, 0 # contador columna
     		
+    		mv a0, s10
+    		li a7, 1
+    		ecall
     		sumar_filas:
-    			mv a2, %filas
-    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+    			mv a2, s6
+    			bge t0, s6, terminar_suma # if t0 == filas terminar
 
     			# Reiniciar contador columnas
     			li t1, 0
     			sumar_columnas:
-    				mv a3, %columnas
-    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+    				mv a3, s7
+    				bge t1, s7, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
     				# Realizar calculo de posicion en memoria
     				li t2, 4 # Tamano de un elemento
-    				mul t3, t0, %columnas
+    				mul t3, t0, s7
     				add t3, t3, t1
     				mul t3, t3, t2
 
     				# Cargar a t4 elementos de la matriz
-    				la t4, %matriz1
+    				mv t4, a5
     				add t4, t4, t3
     				lw t5, 0(t4) # cargar en t5 valor en celda
-    				la t4, %matriz2
+    				mv t4, a6
     				add t4, t4, t3
     				lw t6, 0(t4) #cargar a t6 valor en celda
 
-    				# Realizar la suma entre valores en posicion [filas, columnas]
+    				# Realizar la resta entre valores en posicion [filas, columnas]
     				add t5, t5, t6
 
     				# Almacenar resultado en matriz_resultado
@@ -552,49 +558,55 @@ programa:
     				sw t5, 0(t4)
     				
     				addi t1, t1, 1
-    				mv %columnas, a3
+    				mv s7, a3
     				j sumar_columnas
 
     			terminar_columnas:
     				addi t0, t0, 1 # Incrementar contador columnas
-    				mv %filas, a2
+    				mv s6, a2
     				j sumar_filas
 
     		terminar_suma:
 	.end_macro
 #---------------------------------- END MACRO SUMAR ---------------------------------
 #-------------------------------- MACRO RESTA --------------------------------------
-	.macro resta_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
-    		# Iniciar contadores 
-		mv a1, t1
-		
+	.macro resta_matrices (%matriz1_letra, %matriz2_letra, %matriz_resultado)
+    	     # Iniciar contadores 
+             obtener_matriz1(%matriz1_letra)
+	     obtener_matriz2(%matriz2_letra)    		
+	     	
+             operar:
+		obtener_dimensiones(%matriz1_letra)
     		li t1, 10
-    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		almacenar_dimensiones_matriz(t1, s6, s7)
     		mv t1, a1
     		li t0, 0 # contador fila
     		li t1, 0 # contador columna
     		
-    		sumar_filas:
-    			mv a2, %filas
-    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+    		mv a0, s10
+    		li a7, 1
+    		ecall
+    		restar_filas:
+    			mv a2, s6
+    			bge t0, s6, terminar_resta # if t0 == filas terminar
 
     			# Reiniciar contador columnas
     			li t1, 0
-    			sumar_columnas:
-    				mv a3, %columnas
-    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+    			restar_columnas:
+    				mv a3, s7
+    				bge t1, s7, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
     				# Realizar calculo de posicion en memoria
     				li t2, 4 # Tamano de un elemento
-    				mul t3, t0, %columnas
+    				mul t3, t0, s7
     				add t3, t3, t1
     				mul t3, t3, t2
 
     				# Cargar a t4 elementos de la matriz
-    				la t4, %matriz1
+    				mv t4, a5
     				add t4, t4, t3
     				lw t5, 0(t4) # cargar en t5 valor en celda
-    				la t4, %matriz2
+    				mv t4, a6
     				add t4, t4, t3
     				lw t6, 0(t4) #cargar a t6 valor en celda
 
@@ -607,15 +619,15 @@ programa:
     				sw t5, 0(t4)
     				
     				addi t1, t1, 1
-    				mv %columnas, a3
-    				j sumar_columnas
+    				mv s7, a3
+    				j restar_columnas
 
     			terminar_columnas:
     				addi t0, t0, 1 # Incrementar contador columnas
-    				mv %filas, a2
-    				j sumar_filas
+    				mv s6, a2
+    				j restar_filas
 
-    		terminar_suma:
+    		terminar_resta:
 	.end_macro
 	
 #--------------------------------- MACRO OBTNER MATRIX POR LETRA  --------------------------------	
@@ -728,13 +740,13 @@ programa:
     		mv a0, s10
     		li a7, 1
     		ecall
-    		sumar_filas:
+    		multiplicar_filas:
     			mv a2, s6
-    			bge t0, s6, terminar_suma # if t0 == filas terminar
+    			bge t0, s6, terminar_multiplicacion # if t0 == filas terminar
 
     			# Reiniciar contador columnas
     			li t1, 0
-    			sumar_columnas:
+    			multiplicar_columnas:
     				mv a3, s7
     				bge t1, s7, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
@@ -762,14 +774,14 @@ programa:
     				
     				addi t1, t1, 1
     				mv s7, a3
-    				j sumar_columnas
+    				j multiplicar_columnas
 
     			terminar_columnas:
     				addi t0, t0, 1 # Incrementar contador columnas
     				mv s6, a2
-    				j sumar_filas
+    				j multiplicar_filas
 
-    		terminar_suma:
+    		terminar_multiplicacion:
 	.end_macro
 #---------------------------------- END MACRO MULTIPLICACION ---------------------------------
 ##################################### END MACROS ####################################
@@ -788,7 +800,7 @@ mostrar_detalle:
     
     li t0, 'A'
     li t1, 'B'
-    multiplicacion_matrices(t0, t1, matriz_resultado)  # %matriz1_numero, %matriz2_numero, %matriz_resultado
+    suma_matrices(t0, t1, matriz_resultado)  # %matriz1_numero, %matriz2_numero, %matriz_resultado
     li t1, 10
     imprimir_valores_matriz(t1)
     
