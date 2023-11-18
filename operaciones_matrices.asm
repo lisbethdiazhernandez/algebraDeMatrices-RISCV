@@ -2,7 +2,9 @@
 
 .data
     matriz1: .space 400
+    matriz_operacion1: .space 400
     matriz2: .space 400
+    matriz_operacion2: .space 400
     matriz3: .space 400
     matriz4: .space 400
     matriz5: .space 400
@@ -76,7 +78,12 @@
         .word 0   
     contador_columnas:
         .word 0   
-    
+    indice_parentesis:
+        .word 0
+    substring_buffer:
+        .space 100
+    indice_operador: 
+    	.word 0     
 .text
 
 
@@ -610,39 +617,138 @@ programa:
 
     		terminar_suma:
 	.end_macro
+	
+#--------------------------------- MACRO OBTNER MATRIX POR LETRA  --------------------------------	
+	.macro obtener_matriz1(%letra)
+	     li s7, 'A'
+	     beq s7, %letra, usar_matriz1
+	     li s7, 'B'
+	     beq s7, %letra, usar_matriz2
+	     li s7, 'C'
+	     beq s7, %letra, usar_matriz3
+	     li s7, 'D'
+	     beq s7, %letra, usar_matriz4
+	     li s7, 'Z'
+	     beq s7, %letra, usar_matriztemp
+	     
+	     usar_matriz1:
+	     	la a5, matriz1
+	     	j end_macro
+	     usar_matriz2:
+	     	la a5, matriz2
+	     	j end_macro
+	     usar_matriz3:
+	     	la a5, matriz3
+	     	j end_macro
+             usar_matriz4:
+	     	la a5, matriz4
+	     	j end_macro
+	     usar_matriztemp:
+		la a5, matriz_resultado
+	     	j end_macro
+	  end_macro:
+	  .end_macro
+	 .macro obtener_matriz2(%letra)
+	     li s7, 'A'
+	     beq s7, %letra, usar_matriz1
+	     li s7, 'B'
+	     beq s7, %letra, usar_matriz2
+	     li s7, 'C'
+	     beq s7, %letra, usar_matriz3
+	     li s7, 'D'
+	     beq s7, %letra, usar_matriz4
+	     li s7, 'Z'
+	     beq s7, %letra, usar_matriztemp
+	     
+	     usar_matriz1:
+	     	la a6, matriz1
+	     	j end_macro
+	     usar_matriz2:
+	     	la a6, matriz2
+	     	j end_macro
+	     usar_matriz3:
+	     	la a6, matriz3
+	     	j end_macro
+             usar_matriz4:
+	     	la a6, matriz4
+	     	j end_macro
+	     usar_matriztemp:
+		la a6, matriz_resultado
+	     	j end_macro
+	  end_macro:
+	  .end_macro
+#-------------------------- MACRO obtener dimensiones -------------------	    
+	.macro obtener_dimensiones(%letra)
+	     li s9, 'A'
+	     beq s9, %letra, usar_matriz1
+	     li s9, 'B'
+	     beq s9, %letra, usar_matriz2
+	     li s9, 'C'
+	     beq s9, %letra, usar_matriz3
+	     li s9, 'D'
+	     beq s9, %letra, usar_matriz4
+	     
+	     usar_matriz1:
+	     	la a0, matriz1_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)
+	     	j end_macro
+	     usar_matriz2:
+	     	la a0, matriz2_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)
+	     	j end_macro
+	     usar_matriz3:
+	     	la a0, matriz3_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)
+	     	j end_macro
+	     usar_matriz4:
+	     	la a0, matriz4_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro            
+	  end_macro:
+	  .end_macro	     	 	     	
 #---------------------------------- END MACRO RESTA ---------------------------------
 #-------------------------------- MACRO MULTIPLICACION --------------------------------------
-	.macro multiplicacion_matrices (%matriz1, %matriz2, %matriz_resultado, %filas, %columnas)
-    		# Iniciar contadores 
-		mv a1, t1
-		
+	.macro multiplicacion_matrices (%matriz1_letra, %matriz2_letra, %matriz_resultado)
+    	     # Iniciar contadores 
+             obtener_matriz1(%matriz1_letra)
+	     obtener_matriz2(%matriz2_letra)    		
+	     	
+             operar:
+		obtener_dimensiones(%matriz1_letra)
     		li t1, 10
-    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+    		almacenar_dimensiones_matriz(t1, s6, s7)
     		mv t1, a1
     		li t0, 0 # contador fila
     		li t1, 0 # contador columna
     		
+    		mv a0, s10
+    		li a7, 1
+    		ecall
     		sumar_filas:
-    			mv a2, %filas
-    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+    			mv a2, s6
+    			bge t0, s6, terminar_suma # if t0 == filas terminar
 
     			# Reiniciar contador columnas
     			li t1, 0
     			sumar_columnas:
-    				mv a3, %columnas
-    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+    				mv a3, s7
+    				bge t1, s7, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
     				# Realizar calculo de posicion en memoria
     				li t2, 4 # Tamano de un elemento
-    				mul t3, t0, %columnas
+    				mul t3, t0, s7
     				add t3, t3, t1
     				mul t3, t3, t2
 
     				# Cargar a t4 elementos de la matriz
-    				la t4, %matriz1
+    				mv t4, a5
     				add t4, t4, t3
     				lw t5, 0(t4) # cargar en t5 valor en celda
-    				la t4, %matriz2
+    				mv t4, a6
     				add t4, t4, t3
     				lw t6, 0(t4) #cargar a t6 valor en celda
 
@@ -655,12 +761,12 @@ programa:
     				sw t5, 0(t4)
     				
     				addi t1, t1, 1
-    				mv %columnas, a3
+    				mv s7, a3
     				j sumar_columnas
 
     			terminar_columnas:
     				addi t0, t0, 1 # Incrementar contador columnas
-    				mv %filas, a2
+    				mv s6, a2
     				j sumar_filas
 
     		terminar_suma:
@@ -670,7 +776,7 @@ programa:
 mostrar_detalle:
     
     li t2, 1
-    imprimir_valores_matriz(t1) #TODO: unicamente para verificacion de datos
+    #imprimir_valores_matriz(t1) #TODO: unicamente para verificacion de datos
     li t1, 0 # Inicializar contador de matrices
     la a0, msg_input_operacion
     li a7, 4
@@ -679,20 +785,111 @@ mostrar_detalle:
     li a7, 8
     ecall
     
-    #volver a imprimir valor a donde apunta t5
-    mv t5, a0
-    mv a0, t5                   # Asignar valor de t5 a a0
-    li a7, 4                    # Imprimir valor para verificar 
-    ecall                      
-    li t1, 0
-    la t6, cadena_a_operar
     
-    li t2, 2
-    li t3, 2
-    multiplicacion_matrices(matriz1, matriz2, matriz_resultado, t2, t3)  # %matriz1, %matriz2, %matriz_resultado, %filas, %columnas
+    li t0, 'A'
+    li t1, 'B'
+    multiplicacion_matrices(t0, t1, matriz_resultado)  # %matriz1_numero, %matriz2_numero, %matriz_resultado
     li t1, 10
     imprimir_valores_matriz(t1)
-  
+    
+    
+    
+evaluar_expresion:
+     
+    jal ra, encontrar_parentesis
+
+    la a0, substring_buffer
+    li a7, 4
+    ecall
+    jal ra, buscar_operador
+    
+    beq a0, zero, finalizar_evaluacion
+    
+    
+   
+
+
+buscar_operador:
+    li t1, 0
+    
+    loop_buscar:
+    	lbu t2, 0(a0)
+    	beq t2, zero, no_encontrado
+    	
+    	li t3, 43 #ascii de +
+    	beq t2, t3 encontrado
+    	li t3, 45 # ascii de -
+    	beq t2, t3, encontrado
+    	
+    	addi a0, a0, 1
+    	addi t1, t1, 1
+    	j loop_buscar
+    
+    encontrado: 
+    	mv a0, t1
+    	jr ra
+    	
+    
+
+encontrar_parentesis:
+    li t1, 0  # Inicializar contador
+
+    loop_buscar_cierre:
+        lbu t2, 0(a0)  # Cargar el siguiente caracter de la expresion
+        beq t2, zero, no_encontrado  # Verificar si aun no ha terminado la expresion
+
+        li t3, 41  # cargar el valor ascii de ')'
+        beq t2, t3, cierre_encontrado  # verificar si caracter == ')'
+
+        addi a0, a0, 1  # Continuar recorriendo la expresion
+        addi t1, t1, 1  # Incrementar contador
+        j loop_buscar_cierre
+
+    cierre_encontrado:
+        mv t4, t1
+        
+        loop_buscar_abrir:
+        	beqz t1, no_encontrado
+        	
+        	addi t1, t1, -1
+        	lbu t2, 0(a0)
+        	addi a0, a0, -1
+        	
+        	li t3, 40
+        	beq t2, t3, abrir_encontrado
+        	j loop_buscar_abrir
+        	
+    abrir_encontrado:
+        #almacenar valores dentro de ()
+    	addi a0, a0,2 # nos movemos una posicion para evitar guardar (
+    	la t5, substring_buffer # cargar substring en substring_buffer
+    	mv t6, t4  # setear el index a donde esta )
+	addi t6, t6, -2
+	
+    	almacenar_substring:
+    		ble t6, t1, terminar_almacenamiento
+    		lbu t2, 0(a0)
+    		sb t2, 0(t5) #guardarlo en el buffer
+    		
+    		addi a0, a0,1
+    		addi t5, t5, 1
+    		addi t1, t1, 1
+    		j almacenar_substring
+    		
+    	terminar_almacenamiento:
+    		sb zero, 0(t5)
+    		jr ra
+    	
+    no_encontrado:
+        li a0, -1  # Retornar -1 si no fue encontrado
+        jr ra  # Regresar a donde fue llamado
+        
+   
+        
+     
+finalizar_evaluacion:
+    j finalizar 
+ 
  
 #verificacion_parentesis: #TODO: convertir en macro
 #    lb a0, 0(t5)              # Cargar primer caracter
