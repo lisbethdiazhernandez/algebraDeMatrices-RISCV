@@ -797,12 +797,12 @@ mostrar_detalle:
     li a7, 8
     ecall
     
-    
-    li t0, 'A'
-    li t1, 'B'
-    suma_matrices(t0, t1, matriz_resultado)  # %matriz1_numero, %matriz2_numero, %matriz_resultado
-    li t1, 10
-    imprimir_valores_matriz(t1)
+    #Esto es solo para verificar macros
+    #li t0, 'A'
+    #li t1, 'B'
+    #suma_matrices(t0, t1, matriz_resultado)  # %matriz1_numero, %matriz2_numero, %matriz_resultado
+    #li t1, 10
+    #imprimir_valores_matriz(t1)
     
     
     
@@ -818,9 +818,6 @@ evaluar_expresion:
     beq a0, zero, finalizar_evaluacion
     
     
-   
-
-
 buscar_operador:
     li t1, 0
     
@@ -902,52 +899,7 @@ encontrar_parentesis:
 finalizar_evaluacion:
     j finalizar 
  
- 
-#verificacion_parentesis: #TODO: convertir en macro
-#    lb a0, 0(t5)              # Cargar primer caracter
-#    beq a0, zero, finalizo_lectura    # Si el caracter es nulo, ir a finalizo_lectura 
-#    li t2, '('                # asignar a t2 valor ASCII de '('
-#    li t3, ')'                # asignar a t3 valor ASCII de ')'
-#    beq a0, t2, inicia_segmento  # if caracter actual == '(' inicia segmento
-#    beq a0, t3, termina_segmento   # if caracter actual == ')' termina segmento
-#    bnez t1, almacenar_cadena_operacion      # Guardar valor adentro del parentesis
-#    j continuar_verificacion_parentesis
-
-#inicia_segmento:
-#    li t1, 1                  # Setear flag se encontro (
-#    j continuar_verificacion_parentesis
-
-#termina_segmento:
-#    li t1, 0                  # limpiar flag de parentesis
-#    sb zero, 0(t6)              
-#    j procesar_cadena
-
-#almacenar_cadena_operacion:
-#    sb a0, 0(t6)             # Guardar valor en 'cadena_a_operar'
-#    addi t6, t6, 1           # Moverse a siguiente posicion en cadena a operar
-
-#continuar_verificacion_parentesis:
-#    addi t5, t5, 1           # Moverse a siguiente posicion en input operaciones
-#    j verificacion_parentesis
-
-#finalizo_lectura:
-#    bnez t1, error           # Los parentesis no son correctos
-#    j procesar_cadena
-
-#error:
-#    la a0, error_parentesis
-#   li a7, 4
-#    ecall
-#    j finalizar
-
-#procesar_cadena:
-#    la a0, se_procedera_operacion
-#    li a7, 4
-#    ecall
-#    la a0, cadena_a_operar   # Cargar a a0 lo obtenido dentro de los parentesis
-#    li a7, 4                  
-#    ecall 
-
+  
       
 finalizar:
     li a7, 10
