@@ -816,31 +816,42 @@ evaluar_expresion:
     la a0, cadena_a_operar
     li a7, 4
     ecall
+    
+    #Verificar si ya solo queda 1 caracter 
+    lbu t1, 0(a0)
+    lbu t2, 1(a0)
+    beqz t1, finalizar
+    beqz t2, es_un_caracter
+    
+    # Prioridad 1 verificar los parentesis
+    jal ra, encontrar_parentesis
+    #Si a0 es distinto a 0, existe algo dentro de los parentesis
+    bnez a0, evaluar_subexpresion
+    #si a0 es 0, evaluar con cadena original
+    beqz  a0, continuar_evaluacion
+    #Ver si quda solo 1 Z
     lbu t1, 0(a0)
     li t2, 90
     bne t1, t2, continuar_evaluacion
     lbu t1, 1(a0)
     beqz t1, finalizar
     j continuar_evaluacion
-     
-no_parenthesis:
-    la a0, cadena_a_operar
-    
-    jal ra, buscar_operador
-     
-continuar_evaluacion:
-    #jal ra, encontrar_parentesis
-    #beqz a0, no_parenthesis
-    
-    #la a0, substring_buffer
-    la a0, cadena_a_operar
-    jal ra, buscar_operador
-
-    
-encontramos_substring:
+  
+es_un_caracter:
+    j finalizar
+evaluar_subexpresion:
     la a0, substring_buffer
-    li a7, 4
+    mv s11, a0
+    li a7, 4 
     ecall
+    jal ra, buscar_operador
+       
+continuar_evaluacion:
+    la a0, cadena_a_operar
+    mv s11, a0
+    jal ra, buscar_operador
+   
+ 
     
 buscar_operador:
     li t0, 0
@@ -910,7 +921,7 @@ buscar_operador:
         suma_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-    	la t1, cadena_a_operar   # Load address of the string into t1
+    	mv t1, s11  # Load address of the string into t1
     	addi s2, s2, -1
     	add t1, t1, s2           # Calculate the address to start replacement
 
@@ -923,13 +934,14 @@ buscar_operador:
         multiplicacion_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-    	la t1, cadena_a_operar   # Load address of the string into t1
+    	mv t1, s11  # Load address of the string into t1
     	addi s2, s2, -1
     	add t1, t1, s2           # Calculate the address to start replacement
 
     	li t3, 'Z'               # Replacement character
     	sb t3, 0(t1) 
-    
+        j shift_loop
+        
     shift_loop:
     	addi t1, t1, 1       # Move to the next character
     	lb t3, 2(t1)         # Load byte from the original string 3 positions ahead
@@ -945,7 +957,7 @@ buscar_operador:
     	resta_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-        la t1, cadena_a_operar   # Load address of the string into t1
+        mv t1, s11  # Load address of the string into t1
     	addi s2, s2, -1
     	add t1, t1, s2           # Calculate the address to start replacement
 
@@ -987,18 +999,18 @@ encontrar_parentesis:
         	addi t1, t1, -1
         	lbu t2, 0(a0)
         	addi a0, a0, -1
-        	
         	li t3, 40
+        	mv s8, t1
         	beq t2, t3, abrir_encontrado
         	j loop_buscar_abrir
         	
     abrir_encontrado:
         #almacenar valores dentro de ()
-    	addi a0, a0,2 # nos movemos una posicion para evitar guardar (
+    	addi a0, a0, 2 # nos movemos una posicion para evitar guardar (
     	la t5, substring_buffer # cargar substring en substring_buffer
     	mv t6, t4  # setear el index a donde esta )
 	addi t6, t6, -2
-	
+	mv s8, t6 #guardar en s8 el index del parentesis que abre
     	almacenar_substring:
     		ble t6, t1, terminar_almacenamiento
     		lbu t2, 0(a0)
@@ -1011,8 +1023,32 @@ encontrar_parentesis:
     		
     	terminar_almacenamiento:
     		sb zero, 0(t5)
-    		jr ra
-    	
+    		j replazar_parentesis
+    		
+    	replazar_parentesis:
+    		la t1, cadena_a_operar   # Load address of the string
+    		add t1, t1, s8           # Move to the position of the opening parenthesis
+                addi t1, t1, -2
+    		li t3, 'Z'               # Replacement character
+    		sb t3, 0(t1)             # Replace the opening parenthesis with 'Z'
+
+		addi t1, t1, 1
+    		addi t2, t1, 4           # Move to the next character after 'Z'
+
+    		# Shift the rest of the string four places to the left
+    		intercambio_loop:
+    			lb t3, 0(t2)        # Load byte from the source
+    			sb t3, 0(t1)  
+    			beq t3, zero, terminar_cambio  # If it's a null terminator, end the loop
+    			# Store it in the current position			
+    			addi t1, t1, 1      # Move to the next character
+    			addi t2, t2, 1
+    			j intercambio_loop
+
+		
+    	   	terminar_cambio:
+    	   	        sb zero, 0(t1)
+    	   		jr ra
     no_encontrado:
         li a0, 0  # Retornar -1 si no fue encontrado
         jr ra  # Regresar a donde fue llamado
