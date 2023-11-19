@@ -793,8 +793,13 @@ mostrar_detalle:
     la a0, msg_input_operacion
     li a7, 4
     ecall
+    la a0, cadena_a_operar
     li a1, 100
     li a7, 8
+    ecall
+    
+    la a0, cadena_a_operar
+    li a7, 4
     ecall
     
     #Esto es solo para verificar macros
@@ -804,40 +809,87 @@ mostrar_detalle:
     #li t1, 10
     #imprimir_valores_matriz(t1)
     
-    
+    li t1, 0
     
 evaluar_expresion:
-     
+      
     jal ra, encontrar_parentesis
-
+    beqz a0, no_parenthesis
+    
     la a0, substring_buffer
+    jal ra, buscar_operador
+    j continuar_evaluacion
+     
+no_parenthesis:
+    la a0, cadena_a_operar
+    li a7, 4
+    ecall
+    jal ra, buscar_operador
+     
+continuar_evaluacion:
     li a7, 4
     ecall
     jal ra, buscar_operador
     
-    beq a0, zero, finalizar_evaluacion
     
+encontramos_substring:
+    la a0, substring_buffer
+    li a7, 4
+    ecall
     
 buscar_operador:
-    li t1, 0
+    li t0, 0
+    li t2, -1
+    li t3, -1
     
     loop_buscar:
-    	lbu t2, 0(a0)
-    	beq t2, zero, no_encontrado
+    	lbu t1, 0(a0)
+    	beq t1, zero, terminar_busqueda_operador
     	
-    	li t3, 43 #ascii de +
-    	beq t2, t3 encontrado
-    	li t3, 45 # ascii de -
-    	beq t2, t3, encontrado
+    	li t4, 43 #ascii de +
+    	beq t1, t4, suma_encontrada  	
     	
+    	beqz t3, guardar_matriz1
     	addi a0, a0, 1
-    	addi t1, t1, 1
+    	addi t0, t0, 1
     	j loop_buscar
     
-    encontrado: 
-    	mv a0, t1
-    	jr ra
+    siguiente_caracter:
+        addi a0, a0, 1
+        addi t0, t0, 1
+        j loop_buscar
+        
+    guardar_matriz1:
+        mv t2, t1
+        
+    suma_encontrada:
+        addi a0, a0, 1
+        j parsear_derecha_matriz
+        
+    parsear_derecha_matriz:
+        lbu t1, 0(a0)
+        beq t1, zero, terminar_parseo
+        mv t3, t1
+        j terminar_parseo
+        
+    terminar_parseo:
+        suma_matrices(t2, t3, matriz_resultado)
+    	li t1, 10
+    	imprimir_valores_matriz(t1)
+        j finalizar
+        
     	
+    encontrado: 
+    	mv a2, t0
+    	jr ra
+    
+    terminar_busqueda_operador:
+        li a2, -1
+        jr ra
+    
+multiplicacion_matrices:
+    multiplicacion_matrices(a0, a1, matriz_resultado)
+    jr ra
     
 
 encontrar_parentesis:
@@ -890,7 +942,7 @@ encontrar_parentesis:
     		jr ra
     	
     no_encontrado:
-        li a0, -1  # Retornar -1 si no fue encontrado
+        li a0, 0  # Retornar -1 si no fue encontrado
         jr ra  # Regresar a donde fue llamado
         
    
