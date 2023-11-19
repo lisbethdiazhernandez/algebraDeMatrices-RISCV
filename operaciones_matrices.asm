@@ -642,7 +642,9 @@ programa:
 	     beq s7, %letra, usar_matriz4
 	     li s7, 'Z'
 	     beq s7, %letra, usar_matriztemp
-	     
+             li s7, -1
+	     beq s7, %letra, usar_matriztemp
+	     	     
 	     usar_matriz1:
 	     	la a5, matriz1
 	     	j end_macro
@@ -670,6 +672,8 @@ programa:
 	     li s7, 'D'
 	     beq s7, %letra, usar_matriz4
 	     li s7, 'Z'
+	     beq s7, %letra, usar_matriztemp
+	     li s7, -1
 	     beq s7, %letra, usar_matriztemp
 	     
 	     usar_matriz1:
@@ -809,12 +813,14 @@ mostrar_detalle:
     li t1, 0
     
 evaluar_expresion:
-      
-    jal ra, encontrar_parentesis
-    beqz a0, no_parenthesis
-    
-    la a0, substring_buffer
-    jal ra, buscar_operador
+    la a0, cadena_a_operar
+    li a7, 4
+    ecall
+    lbu t1, 0(a0)
+    li t2, 90
+    bne t1, t2, continuar_evaluacion
+    lbu t1, 1(a0)
+    beqz t1, finalizar
     j continuar_evaluacion
      
 no_parenthesis:
@@ -823,9 +829,13 @@ no_parenthesis:
     jal ra, buscar_operador
      
 continuar_evaluacion:
-     
-    jal ra, buscar_operador
+    #jal ra, encontrar_parentesis
+    #beqz a0, no_parenthesis
     
+    #la a0, substring_buffer
+    la a0, cadena_a_operar
+    jal ra, buscar_operador
+
     
 encontramos_substring:
     la a0, substring_buffer
@@ -849,9 +859,10 @@ buscar_operador:
     	
     	li t4, 42 #ascii de *
     	beq t1, t4, multiplicacion_encontrada  	    	
-    	beqz t3, guardar_matriz1
+    	 
     	addi a0, a0, 1
     	addi t0, t0, 1
+    	mv s10, t1
     	j loop_buscar
     
     siguiente_caracter:
@@ -859,18 +870,22 @@ buscar_operador:
         addi t0, t0, 1
         j loop_buscar
         
-    guardar_matriz1:
-        mv t2, t1
-        
+          
     suma_encontrada:
+        mv s2, t0 #asignar index de signo
+        mv t2, s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
         addi a0, a0, 1
         j parsear_derecha_matriz
 
     resta_encontrada:
+        mv s2, t0 #asignar index de signo
+        mv t2,s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
         addi a0, a0, 1
         j parsear_derecha_matriz
                 
     multiplicacion_encontrada:
+        mv s2, t0 #asignar index de signo
+        mv t2, s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
         addi a0, a0, 1
         j parsear_derecha_matriz
         
@@ -895,27 +910,56 @@ buscar_operador:
         suma_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-        j finalizar
+    	la t1, cadena_a_operar   # Load address of the string into t1
+    	addi s2, s2, -1
+    	add t1, t1, s2           # Calculate the address to start replacement
+
+    	li t3, 'Z'               # Replacement character
+    	sb t3, 0(t1) 
+    	j shift_loop
+    	 
     	
     realizar_multiplicacion:
         multiplicacion_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-        j finalizar
+    	la t1, cadena_a_operar   # Load address of the string into t1
+    	addi s2, s2, -1
+    	add t1, t1, s2           # Calculate the address to start replacement
+
+    	li t3, 'Z'               # Replacement character
+    	sb t3, 0(t1) 
+    
+    shift_loop:
+    	addi t1, t1, 1       # Move to the next character
+    	lb t3, 2(t1)         # Load byte from the original string 3 positions ahead
+    	sb t3, 0(t1)         # Store it in the current position
+   	beq t3, zero, end_shift  # If it's a null terminator, end the loop
+    	j shift_loop
+
+    end_shift:   		
+    	j evaluar_expresion
+     
         
     realizar_resta:
     	resta_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-        j finalizar
+        la t1, cadena_a_operar   # Load address of the string into t1
+    	addi s2, s2, -1
+    	add t1, t1, s2           # Calculate the address to start replacement
+
+    	li t3, 'Z'               # Replacement character
+    	sb t3, 0(t1) 
+    	j shift_loop
         
     encontrado: 
     	mv a2, t0
     	jr ra
     
     terminar_busqueda_operador:
-        li a2, -1
-        jr ra
+        j finalizar
+        
     
  
     
