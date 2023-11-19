@@ -845,10 +845,15 @@ buscar_operador:
     loop_buscar:
     	lbu t1, 0(a0)
     	beq t1, zero, terminar_busqueda_operador
-    	
+    	mv t6, t1
     	li t4, 43 #ascii de +
     	beq t1, t4, suma_encontrada  	
+
+    	li t4, 45 #ascii de -
+    	beq t1, t4, resta_encontrada  	
     	
+    	li t4, 42 #ascii de *
+    	beq t1, t4, multiplicacion_encontrada  	    	
     	beqz t3, guardar_matriz1
     	addi a0, a0, 1
     	addi t0, t0, 1
@@ -865,6 +870,14 @@ buscar_operador:
     suma_encontrada:
         addi a0, a0, 1
         j parsear_derecha_matriz
+
+    resta_encontrada:
+        addi a0, a0, 1
+        j parsear_derecha_matriz
+                
+    multiplicacion_encontrada:
+        addi a0, a0, 1
+        j parsear_derecha_matriz
         
     parsear_derecha_matriz:
         lbu t1, 0(a0)
@@ -873,12 +886,34 @@ buscar_operador:
         j terminar_parseo
         
     terminar_parseo:
+        li t4, 43 #ascii de +
+    	beq t6, t4, realizar_suma
+
+    	li t4, 45 #ascii de -
+    	beq t6, t4, realizar_resta	
+    	
+    	li t4, 42 #ascii de *
+    	beq t6, t4, realizar_multiplicacion 	
+    	j finalizar
+        
+    realizar_suma:
         suma_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
         j finalizar
-        
     	
+    realizar_multiplicacion:
+        multiplicacion_matrices(t2, t3, matriz_resultado)
+    	li t1, 10
+    	imprimir_valores_matriz(t1)
+        j finalizar
+        
+    realizar_resta:
+    	resta_matrices(t2, t3, matriz_resultado)
+    	li t1, 10
+    	imprimir_valores_matriz(t1)
+        j finalizar
+        
     encontrado: 
     	mv a2, t0
     	jr ra
@@ -887,9 +922,7 @@ buscar_operador:
         li a2, -1
         jr ra
     
-multiplicacion_matrices:
-    multiplicacion_matrices(a0, a1, matriz_resultado)
-    jr ra
+ 
     
 
 encontrar_parentesis:
