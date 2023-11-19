@@ -921,11 +921,11 @@ buscar_operador:
         suma_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-    	mv t1, s11  # Load address of the string into t1
+    	mv t1, s11  # cargar la cadena utilizada actualmente
     	addi s2, s2, -1
-    	add t1, t1, s2           # Calculate the address to start replacement
+    	add t1, t1, s2           # calcular donde tenemos que empezar a remplazar
 
-    	li t3, 'Z'               # Replacement character
+    	li t3, 'Z'               # Remplazar caracter
     	sb t3, 0(t1) 
     	j shift_loop
     	 
@@ -934,19 +934,19 @@ buscar_operador:
         multiplicacion_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-    	mv t1, s11  # Load address of the string into t1
+    	mv t1, s11  # cargar la cadena utilizada actualmente
     	addi s2, s2, -1
-    	add t1, t1, s2           # Calculate the address to start replacement
+    	add t1, t1, s2           # calcular donde tenemos que empezar a remplazar
 
-    	li t3, 'Z'               # Replacement character
+    	li t3, 'Z'               # Remplazar caracter
     	sb t3, 0(t1) 
         j shift_loop
         
     shift_loop:
-    	addi t1, t1, 1       # Move to the next character
-    	lb t3, 2(t1)         # Load byte from the original string 3 positions ahead
-    	sb t3, 0(t1)         # Store it in the current position
-   	beq t3, zero, end_shift  # If it's a null terminator, end the loop
+    	addi t1, t1, 1       # Movernos al siguiente caracter
+    	lb t3, 2(t1)         # cargar el valor de 3 posiciones despues
+    	sb t3, 0(t1)         # guardar el neuvo valor a asignar
+   	beq t3, zero, end_shift  # si es nullo terminar
     	j shift_loop
 
     end_shift:   		
@@ -957,11 +957,11 @@ buscar_operador:
     	resta_matrices(t2, t3, matriz_resultado)
     	li t1, 10
     	imprimir_valores_matriz(t1)
-        mv t1, s11  # Load address of the string into t1
+        mv t1, s11  # cargar cadena utilizada actualmente
     	addi s2, s2, -1
-    	add t1, t1, s2           # Calculate the address to start replacement
+    	add t1, t1, s2           # calcular donde empieza
 
-    	li t3, 'Z'               # Replacement character
+    	li t3, 'Z'               # Remplazar caracter
     	sb t3, 0(t1) 
     	j shift_loop
         
@@ -1026,22 +1026,22 @@ encontrar_parentesis:
     		j replazar_parentesis
     		
     	replazar_parentesis:
-    		la t1, cadena_a_operar   # Load address of the string
-    		add t1, t1, s8           # Move to the position of the opening parenthesis
+    		la t1, cadena_a_operar   # Carcar cadena actual a t1
+    		add t1, t1, s8           # Movernos a donde se encuentra el parentesis
                 addi t1, t1, -2
-    		li t3, 'Z'               # Replacement character
-    		sb t3, 0(t1)             # Replace the opening parenthesis with 'Z'
+    		li t3, 'Z'               # Remplazar caracter
+    		sb t3, 0(t1)             # Remplazar lo que se encuentra dentro del parentesis por una Z
 
 		addi t1, t1, 1
-    		addi t2, t1, 4           # Move to the next character after 'Z'
+    		addi t2, t1, 4          
 
-    		# Shift the rest of the string four places to the left
+    		# Intercambiar los demas caracteres por una Z
     		intercambio_loop:
-    			lb t3, 0(t2)        # Load byte from the source
+    			lb t3, 0(t2)        # Cargar el valor 
     			sb t3, 0(t1)  
-    			beq t3, zero, terminar_cambio  # If it's a null terminator, end the loop
-    			# Store it in the current position			
-    			addi t1, t1, 1      # Move to the next character
+    			beq t3, zero, terminar_cambio   
+    			 
+    			addi t1, t1, 1      
     			addi t2, t2, 1
     			j intercambio_loop
 
