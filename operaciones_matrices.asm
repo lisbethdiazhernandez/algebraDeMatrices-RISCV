@@ -523,8 +523,7 @@ programa:
     		li t1, 0 # contador columna
     		
     		mv a0, s10
-    		li a7, 1
-    		ecall
+    		 
     		sumar_filas:
     			mv a2, s6
     			bge t0, s6, terminar_suma # if t0 == filas terminar
@@ -584,8 +583,7 @@ programa:
     		li t1, 0 # contador columna
     		
     		mv a0, s10
-    		li a7, 1
-    		ecall
+    		 
     		restar_filas:
     			mv a2, s6
     			bge t0, s6, terminar_resta # if t0 == filas terminar
@@ -742,8 +740,7 @@ programa:
     		li t1, 0 # contador columna
     		
     		mv a0, s10
-    		li a7, 1
-    		ecall
+    		 
     		multiplicar_filas:
     			mv a2, s6
     			bge t0, s6, terminar_multiplicacion # if t0 == filas terminar
