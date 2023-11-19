@@ -797,10 +797,7 @@ mostrar_detalle:
     li a1, 100
     li a7, 8
     ecall
-    
-    la a0, cadena_a_operar
-    li a7, 4
-    ecall
+     
     
     #Esto es solo para verificar macros
     #li t0, 'A'
@@ -822,13 +819,11 @@ evaluar_expresion:
      
 no_parenthesis:
     la a0, cadena_a_operar
-    li a7, 4
-    ecall
+    
     jal ra, buscar_operador
      
 continuar_evaluacion:
-    li a7, 4
-    ecall
+     
     jal ra, buscar_operador
     
     
