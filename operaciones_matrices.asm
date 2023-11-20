@@ -867,50 +867,66 @@ buscar_operador:
     li t0, 0
     li t2, -1
     li t3, -1
-    
-    loop_buscar:
-    	lbu t1, 0(a0)
-    	beq t1, zero, terminar_busqueda_operador
-    	mv t6, t1
-    	li t4, 43 #ascii de +
-    	beq t1, t4, suma_encontrada  	
+    mv s3, a0
 
-    	li t4, 45 #ascii de -
-    	beq t1, t4, resta_encontrada  	
-    	
-    	li t4, 42 #ascii de *
-    	beq t1, t4, multiplicacion_encontrada  	  
-    	
-    	li t4, '0' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '1' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '2' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '3' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '4' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '5' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '6' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '7' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '8' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado
-    	li t4, '9' #ascii de un numero (para escalares)
-    	beq t1, t4, escalar_encontrado	
-    	 
-    	addi a0, a0, 1
-    	addi t0, t0, 1
-    	mv s10, t1
-    	j loop_buscar
-    
-    siguiente_caracter:
+    # Prioridad 1: Multiplicacion
+    loop_buscar_multiplicacion:
+        lbu t1, 0(a0)
+        beq t1, zero , continuar_suma_resta
+        mv t6, t1
+        li t4, 42 # ascii de *
+        beq t1, t4, multiplicacion_encontrada
         addi a0, a0, 1
         addi t0, t0, 1
-        j loop_buscar
+        mv s10, t1
+        j loop_buscar_multiplicacion
+
+    continuar_suma_resta:
+        li t0, 0
+     	li t2, -1
+     	li t3, -1
+    	mv a0, s3
+    	j loop_buscar_suma_resta
+    	
+    # Prioridad 2: Suma y Resta
+    loop_buscar_suma_resta:
+        lbu t1, 0(a0)
+        beq t1, zero, continuar_escalar
+        mv t6, t1
+        li t4, 43 # ascii de +
+        beq t1, t4, suma_encontrada
+        li t4, 45 # ascii de -
+        beq t1, t4, resta_encontrada
+        addi a0, a0, 1
+        addi t0, t0, 1
+        mv s10, t1
+        j loop_buscar_suma_resta
+
+    continuar_escalar:
+        li t0, 0
+     	li t2, -1
+     	li t3, -1
+    	mv a0, s3
+    	j loop_buscar_escalar
+    	
+    # Prioridad 3: Escalar
+    loop_buscar_escalar:
+        lbu t1, 0(a0)
+        beq t1, zero, terminar_busqueda_operador
+        mv t6, t1
+        # Verificar si t1 es un numero
+        li t4, '0'
+        blt t1, t4, siguiente_caracter_escalar
+        li t4, '9'
+        bgt t1, t4, siguiente_caracter_escalar
+        j escalar_encontrado
+
+    siguiente_caracter_escalar:
+        addi a0, a0, 1
+        addi t0, t0, 1
+        j loop_buscar_escalar
+
+      
            
     suma_encontrada:
         mv s2, t0 #asignar index de signo
