@@ -101,6 +101,16 @@ programa:
     beq %numero_matriz, t0, usar_matriz3
     li t0, 3
     beq %numero_matriz, t0, usar_matriz4
+	li t0, 4
+    beq %numero_matriz, t0, usar_matriz5
+	li t0, 5
+    beq %numero_matriz, t0, usar_matriz6
+	li t0, 6
+    beq %numero_matriz, t0, usar_matriz7
+	li t0, 7
+    beq %numero_matriz, t0, usar_matriz8
+	li t0, 8
+    beq %numero_matriz, t0, usar_matriz9
     li t0, 10
     beq %numero_matriz, t0, usar_matriztemp
     li t0, 11
@@ -122,7 +132,27 @@ programa:
     usar_matriz4:
         la a0, matriz4
         la t0, matriz4_dimensiones
-	j calcular_mapeo
+		j calcular_mapeo
+	usar_matriz5:
+        la a0, matriz5
+        la t0, matriz5_dimensiones
+		j calcular_mapeo
+    usar_matriz6:
+        la a0, matriz6
+        la t0, matriz6_dimensiones
+		j calcular_mapeo
+	usar_matriz7:
+        la a0, matriz7
+        la t0, matriz7_dimensiones
+		j calcular_mapeo
+	usar_matriz8:
+        la a0, matriz8
+        la t0, matriz8_dimensiones
+		j calcular_mapeo
+	usar_matriz9:
+        la a0, matriz9
+        la t0, matriz9_dimensiones
+		j calcular_mapeo
     usar_matriztemp:
      	la a0, matriz_resultado
      	la t0, matriztemp_dimensiones
@@ -154,6 +184,19 @@ programa:
 	beq %numero_matriz, t0, matriz2 # if numero_matriz == 1
 	li t0, 2
 	beq %numero_matriz, t0, matriz3 # if numero_matriz == 2
+	li t0, 3
+	beq %numero_matriz, t0, matriz4 # if numero_matriz == 3
+    li t0, 4
+	beq %numero_matriz, t0, matriz5 # if numero_matriz == 4
+	li t0, 5
+	beq %numero_matriz, t0, matriz6 # if numero_matriz == 5
+    li t0, 6
+	beq %numero_matriz, t0, matriz7 # if numero_matriz == 6
+	li t0, 7
+	beq %numero_matriz, t0, matriz8 # if numero_matriz == 7
+	li t0, 8
+	beq %numero_matriz, t0, matriz9 # if numero_matriz == 8
+	 
 	li t0, 10
 	beq %numero_matriz, t0, matriztemp # if numero_matriz == 'a'
 	li t0, 11
@@ -183,6 +226,41 @@ programa:
 	beq %numero_matriz, t0, matriz4 # if numero_matriz == 3
 	matriz4:
 		la a0, matriz4_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	matriz5:
+		la a0, matriz5_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	matriz6:
+		la a0, matriz6_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	matriz7:
+		la a0, matriz7_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	matriz8:
+		la a0, matriz8_dimensiones # Cargar matriz1_dimensiones a a0
+		mv t0, %numero_filas	   # Cargar numero filas a t0
+		sw t0, 0(a0)               # Almacenar t0 en a0[0]
+		mv t0, %numero_columnas    # Cargar numero columnas a t0
+		sw t0, 4(a0)               # Almacenar t0 en a0[4]
+	j end_macro
+	matriz9:
+		la a0, matriz9_dimensiones # Cargar matriz1_dimensiones a a0
 		mv t0, %numero_filas	   # Cargar numero filas a t0
 		sw t0, 0(a0)               # Almacenar t0 en a0[0]
 		mv t0, %numero_columnas    # Cargar numero columnas a t0
@@ -343,6 +421,16 @@ programa:
     beq %numero_matriz, t0, imprimir_matriz3
     li t0, 3
     beq %numero_matriz, t0, imprimir_matriz4
+	li t0, 4
+    beq %numero_matriz, t0, imprimir_matriz5
+	li t0, 5
+    beq %numero_matriz, t0, imprimir_matriz6
+	li t0, 6
+    beq %numero_matriz, t0, imprimir_matriz7
+	li t0, 7
+    beq %numero_matriz, t0, imprimir_matriz8
+	li t0, 8
+    beq %numero_matriz, t0, imprimir_matriz9
     
     li t0, 10
     beq %numero_matriz, t0, imprimir_matriztemp
@@ -364,6 +452,26 @@ programa:
     imprimir_matriz4:
         la t1, matriz4
         la t2, matriz4_dimensiones
+        j imprimir_matriz
+	imprimir_matriz5:
+        la t1, matriz5
+        la t2, matriz5_dimensiones
+        j imprimir_matriz
+	imprimir_matriz6:
+        la t1, matriz6
+        la t2, matriz6_dimensiones
+        j imprimir_matriz
+	imprimir_matriz7:
+        la t1, matriz7
+        la t2, matriz7_dimensiones
+        j imprimir_matriz
+	imprimir_matriz8:
+        la t1, matriz8
+        la t2, matriz8_dimensiones
+        j imprimir_matriz
+	imprimir_matriz9:
+        la t1, matriz9
+        la t2, matriz9_dimensiones
         j imprimir_matriz
     imprimir_matriztemp:
         la t1, matriz_resultado
@@ -437,25 +545,6 @@ programa:
     end_macro:
     .end_macro
 #----------------------------- END MACRO imprimir_valores_matriz --------------------------
-
-#--------------------------------- MACRO realizar operaciones ----------------------------
-	.macro realizar_operaciones (%numero_matriz) #TODO: pendiente de implementar
-   		beqz %numero_matriz, matriz1
-
-   		matriz1:
-   			la a0, matriz1_dimensiones
-       			lw t0, 0(a0) #t0 tiene las filas
-       			 
-       			la a0, matriz1_dimensiones
-       			lw t1, 4(a0) # t1 tiene columnas
-       			 
-       			
-       			j end_macro
-			
-
-   		end_macro:
-		.end_macro
-#----------------------------- END MACRO realizar operaciones --------------------------
 #------------------------------ MACRO ESCALAR --------------------------------------
 	.macro escalar_matrices (%matriz1_letra, %k, %matriz_resultado)
     	     # Iniciar contadores 
@@ -516,12 +605,12 @@ programa:
 
 #------------------------------ MACRO SUMAR --------------------------------------
 	.macro suma_matrices (%matriz1_letra, %matriz2_letra, %matriz_resultado)
-    	     # Iniciar contadores 
-             obtener_matriz1(%matriz1_letra)
-	     obtener_matriz2(%matriz2_letra)    		
+    	# Iniciar contadores 
+        obtener_matriz1(%matriz1_letra)
+	    obtener_matriz2(%matriz2_letra)    		
 	     	
-             operar:
-		obtener_dimensiones(%matriz1_letra)
+        operar:
+			obtener_dimensiones(%matriz1_letra)
     		li t1, 10
     		almacenar_dimensiones_matriz(t1, s6, s7)
     		mv t1, a1
@@ -644,6 +733,16 @@ programa:
 	     beq s7, %letra, usar_matriz3
 	     li s7, 'D'
 	     beq s7, %letra, usar_matriz4
+		 li s7, 'E'
+	     beq s7, %letra, usar_matriz5
+		 li s7, 'F'
+	     beq s7, %letra, usar_matriz6
+		 li s7, 'G'
+	     beq s7, %letra, usar_matriz7
+		 li s7, 'H'
+	     beq s7, %letra, usar_matriz8
+		 li s7, 'I'
+	     beq s7, %letra, usar_matriz9
 	     li s7, 'Z'
 	     beq s7, %letra, usar_matriztemp
              li s7, -1
@@ -658,8 +757,23 @@ programa:
 	     usar_matriz3:
 	     	la a5, matriz3
 	     	j end_macro
-             usar_matriz4:
+         usar_matriz4:
 	     	la a5, matriz4
+	     	j end_macro
+		 usar_matriz5:
+	     	la a5, matriz5
+	     	j end_macro
+		 usar_matriz6:
+	     	la a5, matriz6
+	     	j end_macro
+		 usar_matriz7:
+	     	la a5, matriz7
+	     	j end_macro
+		 usar_matriz8:
+	     	la a5, matriz8
+	     	j end_macro
+		 usar_matriz9:
+	     	la a5, matriz9
 	     	j end_macro
 	     usar_matriztemp:
 		la a5, matriz_resultado
@@ -675,6 +789,16 @@ programa:
 	     beq s7, %letra, usar_matriz3
 	     li s7, 'D'
 	     beq s7, %letra, usar_matriz4
+		 li s7, 'E'
+	     beq s7, %letra, usar_matriz5
+		 li s7, 'F'
+	     beq s7, %letra, usar_matriz6
+		 li s7, 'G'
+	     beq s7, %letra, usar_matriz7
+		 li s7, 'H'
+	     beq s7, %letra, usar_matriz8
+		 li s7, 'I'
+	     beq s7, %letra, usar_matriz9
 	     li s7, 'Z'
 	     beq s7, %letra, usar_matriztemp
 	     li s7, -1
@@ -689,9 +813,25 @@ programa:
 	     usar_matriz3:
 	     	la a6, matriz3
 	     	j end_macro
-             usar_matriz4:
+	     usar_matriz4:
 	     	la a6, matriz4
 	     	j end_macro
+		 usar_matriz5:
+	     	la a6, matriz5
+	     	j end_macro
+		 usar_matriz6:
+	     	la a6, matriz6
+	     	j end_macro
+		 usar_matriz7:
+	     	la a6, matriz7
+	     	j end_macro
+		 usar_matriz8:
+	     	la a6, matriz8
+	     	j end_macro
+		 usar_matriz9:
+	     	la a6, matriz9
+	     	j end_macro
+		
 	     usar_matriztemp:
 		la a6, matriz_resultado
 	     	j end_macro
@@ -707,6 +847,16 @@ programa:
 	     beq s9, %letra, usar_matriz3
 	     li s9, 'D'
 	     beq s9, %letra, usar_matriz4
+		 li s9, 'E'
+	     beq s9, %letra, usar_matriz5
+		 li s9, 'F'
+	     beq s9, %letra, usar_matriz6
+		 li s9, 'G'
+	     beq s9, %letra, usar_matriz7
+		 li s9, 'H'
+	     beq s9, %letra, usar_matriz8
+		 li s9, 'I'
+	     beq s9, %letra, usar_matriz9
 	     
 	     usar_matriz1:
 	     	la a0, matriz1_dimensiones
@@ -727,14 +877,39 @@ programa:
 	     	la a0, matriz4_dimensiones
 	     	lw s6, 0(a0)
 	     	lw s7, 4(a0)  
-	     	j end_macro            
+	     	j end_macro     
+	     usar_matriz5:
+	     	la a0, matriz5_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro     
+		 usar_matriz6:
+	     	la a0, matriz6_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro  
+		 usar_matriz7:
+	     	la a0, matriz7_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro  
+	     usar_matriz8:
+	     	la a0, matriz8_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro  
+		 usar_matriz9:
+	     	la a0, matriz9_dimensiones
+	     	lw s6, 0(a0)
+	     	lw s7, 4(a0)  
+	     	j end_macro         
 	  end_macro:
 	  .end_macro	     	 	     	
 #---------------------------------- END MACRO RESTA ---------------------------------
 #-------------------------------- MACRO MULTIPLICACION --------------------------------------
 	.macro multiplicacion_matrices (%matriz1_letra, %matriz2_letra, %matriz_resultado)
-    	     # Iniciar contadores 
-             obtener_matriz1(%matriz1_letra)
+	     # Iniciar contadores 
+	     obtener_matriz1(%matriz1_letra)
 	     obtener_matriz2(%matriz2_letra)    		
 	     	
              operar:
