@@ -1251,7 +1251,7 @@ encontrar_parentesis:
         mv t4, t1
         
         loop_buscar_abrir:
-        	beqz t1, no_encontrado
+        	beqz t1, parentesis_faltante
         	
         	addi t1, t1, -1
         	lbu t2, 0(a0)
@@ -1309,5 +1309,8 @@ encontrar_parentesis:
     no_encontrado:
         li a0, 0  # Retornar -1 si no fue encontrado
         jr ra  # Regresar a donde fue llamado
-        
+    parentesis_faltante:
+        la a0,   error_parentesis
+        li a7, 4
+        ecall
      
