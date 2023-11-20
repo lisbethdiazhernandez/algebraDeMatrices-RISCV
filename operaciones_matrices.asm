@@ -457,38 +457,44 @@ programa:
 		.end_macro
 #----------------------------- END MACRO realizar operaciones --------------------------
 #------------------------------ MACRO ESCALAR --------------------------------------
-	.macro escalar_matriz (%matriz1, %k, %matriz_resultado, %filas, %columnas)
-    		# Iniciar contadores 
-		mv a1, t1
-    		li t1, 11 # Numero asignado a matriz escalar
-    		almacenar_dimensiones_matriz(t1, %filas, %columnas)
+	.macro escalar_matrices (%matriz1_letra, %k, %matriz_resultado)
+    	     # Iniciar contadores 
+    	     mv a6, %k
+             obtener_matriz1(%matriz1_letra)   		
+	    
+             operar:
+		obtener_dimensiones(%matriz1_letra)
+    		li t1, 10
+    		almacenar_dimensiones_matriz(t1, s6, s7)
     		mv t1, a1
     		li t0, 0 # contador fila
     		li t1, 0 # contador columna
     		
+    		mv a0, s10
+    		 
     		sumar_filas:
-    			mv a2, %filas
-    			bge t0, %filas, terminar_suma # if t0 == filas terminar
+    			mv a2, s6
+    			bge t0, s6, terminar_suma # if t0 == filas terminar
 
     			# Reiniciar contador columnas
     			li t1, 0
     			sumar_columnas:
-    				mv a3, %columnas
-    				bge t1, %columnas, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
+    				mv a3, s7
+    				bge t1, s7, terminar_columnas # if t1 == columnas, seguir con la siguiente fila
 
     				# Realizar calculo de posicion en memoria
     				li t2, 4 # Tamano de un elemento
-    				mul t3, t0, %columnas
+    				mul t3, t0, s7
     				add t3, t3, t1
     				mul t3, t3, t2
 
     				# Cargar a t4 elementos de la matriz
-    				la t4, %matriz1
+    				mv t4, a5
     				add t4, t4, t3
     				lw t5, 0(t4) # cargar en t5 valor en celda
     				 
-    				# Realizar la suma entre valores en posicion [filas, columnas]
-    				mul t5, t5, %k
+    				# Realizar la resta entre valores en posicion [filas, columnas]
+    				mul t5, t5, a6
 
     				# Almacenar resultado en matriz_resultado
     				la t4, matriz_resultado
@@ -496,12 +502,12 @@ programa:
     				sw t5, 0(t4)
     				
     				addi t1, t1, 1
-    				mv %columnas, a3
+    				mv s7, a3
     				j sumar_columnas
 
     			terminar_columnas:
     				addi t0, t0, 1 # Incrementar contador columnas
-    				mv %filas, a2
+    				mv s6, a2
     				j sumar_filas
 
     		terminar_suma:
@@ -808,7 +814,16 @@ mostrar_detalle:
     #imprimir_valores_matriz(t1)
     
     li t1, 0
+    j evaluar_expresion
     
+#finalizadores  
+finalizar:
+    li a7, 10
+    ecall
+    
+terminar_busqueda_operador:
+        j finalizar   
+          
 evaluar_expresion:
     la a0, cadena_a_operar
     li a7, 4
@@ -848,8 +863,6 @@ continuar_evaluacion:
     mv s11, a0
     jal ra, buscar_operador
    
- 
-    
 buscar_operador:
     li t0, 0
     li t2, -1
@@ -866,7 +879,28 @@ buscar_operador:
     	beq t1, t4, resta_encontrada  	
     	
     	li t4, 42 #ascii de *
-    	beq t1, t4, multiplicacion_encontrada  	    	
+    	beq t1, t4, multiplicacion_encontrada  	  
+    	
+    	li t4, '0' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '1' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '2' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '3' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '4' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '5' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '6' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '7' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '8' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado
+    	li t4, '9' #ascii de un numero (para escalares)
+    	beq t1, t4, escalar_encontrado	
     	 
     	addi a0, a0, 1
     	addi t0, t0, 1
@@ -877,8 +911,7 @@ buscar_operador:
         addi a0, a0, 1
         addi t0, t0, 1
         j loop_buscar
-        
-          
+           
     suma_encontrada:
         mv s2, t0 #asignar index de signo
         mv t2, s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
@@ -896,7 +929,44 @@ buscar_operador:
         mv t2, s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
         addi a0, a0, 1
         j parsear_derecha_matriz
+       
+    escalar_encontrado:
+    	mv s2, t0 #asignar index de signo
+        mv t2, s10 #asignar a t2 valor de primera matriz (A, B, C, etc)
+        addi a0, a0, 1
+        mv t4, t1
+        addi t4, t4, -48
+        j parsear_derecha_escalar
         
+    parsear_derecha_escalar:
+        lbu t1, 0(a0)
+        mv t3, t1
+        j realizar_escalar
+        
+    realizar_escalar:
+        mv t2, t4
+        escalar_matrices(t3, t2, matriz_resultado)
+    	li t1, 10
+    	imprimir_valores_matriz(t1)
+    	mv t1, s11  # cargar la cadena utilizada actualmente
+
+    	li t3, 'Z'               # Remplazar caracter
+    	sb t3, 0(t1) 
+    	
+    	j shift_loop_escalar
+    	
+    shift_loop_escalar:
+        addi t1, t1, 1
+        addi t2, t1, 1
+        
+    shift_loop_escalar_body:
+        lb t3, 0(t2)
+        sb t3, 0(t1)
+        beq t3, zero, evaluar_expresion
+        addi t1, t1, 1
+        addi t2, t2, 1
+        j shift_loop_escalar_body
+    	
     parsear_derecha_matriz:
         lbu t1, 0(a0)
         beq t1, zero, terminar_parseo
@@ -961,17 +1031,16 @@ buscar_operador:
     	li t3, 'Z'               # Remplazar caracter
     	sb t3, 0(t1) 
     	j shift_loop
-        
+    
+    
     encontrado: 
     	mv a2, t0
     	jr ra
     
-    terminar_busqueda_operador:
-        j finalizar
-        
-    
- 
-    
+
+finalizar_evaluacion:
+    j finalizar 
+  
 
 encontrar_parentesis:
     li t1, 0  # Inicializar contador
@@ -1050,14 +1119,4 @@ encontrar_parentesis:
         li a0, 0  # Retornar -1 si no fue encontrado
         jr ra  # Regresar a donde fue llamado
         
-   
-        
      
-finalizar_evaluacion:
-    j finalizar 
- 
-  
-      
-finalizar:
-    li a7, 10
-    ecall
